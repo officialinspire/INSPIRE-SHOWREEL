@@ -32,14 +32,16 @@ function resolveSource(cfg, { game, shot, layout, variant, anchor, occurrence = 
     throw new Error(`${game}: no usable ${layout}/${variant} take of "${shot}" (have: ${have}) — run npm run capture:${variant === 'sfx' ? 'sfx' : game}`);
   }
   const events = take.events.filter((e) => e.t !== null && e.kind !== 'screenshot' && (e.label === anchor || e.label.startsWith(`${anchor}`)));
-  const ev = events[occurrence - 1];
-  if (!ev) {
+  if (!events.length) {
     const labels = [...new Set(take.events.filter((e) => e.t !== null).map((e) => e.label.replace(/[: ].*$/, '')))].join(', ');
-    throw new Error(`${game}/${shot} (${layout}/${variant}): anchor "${anchor}" #${occurrence} not found (labels: ${labels})`);
+    throw new Error(`${game}/${shot} (${layout}/${variant}): anchor "${anchor}" not found (labels: ${labels})`);
   }
+  // Live gameplay varies between takes: if this take has fewer occurrences, use its last one.
+  const fallback = occurrence > events.length;
+  const ev = events[Math.min(occurrence, events.length) - 1];
   const len = take.validation.metrics.durationSec;
   let start = Math.max(0, ev.t + offset);
-  const warnings = [];
+  const warnings = fallback ? [`${game}/${shot} (${layout}/${variant}): "${anchor}" #${occurrence} not in this take; used #${events.length}`] : [];
   if (start + durSec > len - 0.05) {
     const s2 = Math.max(0, len - 0.05 - durSec);
     warnings.push(`${game}/${shot}: clip would overrun the take by ${(start + durSec - len).toFixed(2)}s; moved start ${start.toFixed(2)}→${s2.toFixed(2)}`);

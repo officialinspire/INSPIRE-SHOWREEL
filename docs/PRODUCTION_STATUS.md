@@ -1,6 +1,6 @@
 # Production status
 
-_Last verified: 2026-11-24. Toolchain: Playwright 1.63.0, Chromium 158 (headed, on Xvfb), FFmpeg 6.1.1, PulseAudio 16, Node 22, on a 4-core machine with no GPU._
+_Last verified: 2026-11-24 (production QA and release pass). Toolchain: Playwright 1.63.0, Chromium 158 (headed, on Xvfb), FFmpeg 6.1.1, PulseAudio 16, Node 22, on a 4-core machine with no GPU._
 
 ## Summary
 
@@ -9,16 +9,97 @@ _Last verified: 2026-11-24. Toolchain: Playwright 1.63.0, Chromium 158 (headed, 
 | Live URLs (`npm run verify:urls`) | ✅ 6/6 return HTTP 200 with the expected `<title>` |
 | Studio assets (`npm run fetch && npm run validate`) | ✅ intro bit-identical to the original (SHA-256 `8a6ce01d…`), plus the logo and all per-game assets |
 | Gameplay capture (`npm run capture:all`, clean run) | ✅ **6/6 games complete** in every layout they support: 11 game/layout pairs, 29 shots, 74–114 s usable per pair, delivered at 59.5–59.9 fps |
-| SFX-only takes (`npm run capture:sfx`) | ✅ 26/26 takes of the trailer shots recorded with the game music blocked |
-| Trailer *ENTER THE INSPIREVERSE — Official Gameplay Showcase 2026* | ✅ rendered in **16:9, 9:16 and 1:1**: 57.05 s each, −13.9 LUFS, −2.0 dBFS true peak |
-| 15-second highlights | ✅ 12 rendered (6 games × 16:9 and 9:16), −13.8 to −14.8 LUFS |
-| Render validation (`npm run validate:renders`) | ✅ 15/15: H.264 High, yuv420p, 60 fps, AAC 48 kHz stereo, faststart, duration, loudness, true peak, no black outside the intro. Contact sheets were also checked by eye. |
-| Tests (`npm test`) | ✅ 16/16 |
-| Push to GitHub | ❌ **blocked**: `officialinspire/INSPIRE-SHOWREEL` does not exist, and this session can neither create it nor push to it. See Blockers. |
+| SFX-only takes (`npm run capture:sfx`) | ✅ 26/26 trailer-shot takes recorded with the game music blocked |
+| Production QA pass (2026-11-24) | ✅ fixed: BT.709 colour, H.264 level 4.2, platform-safe graphics. All files re-rendered (see *QA pass*). |
+| Trailer *ENTER THE INSPIREVERSE — Official Gameplay Showcase 2026* | ✅ **16:9, 9:16 and 1:1**: 57.05 s each, −13.9 LUFS, −2.0 dBFS true peak |
+| 15-second game trailers | ✅ 12 (6 games × 16:9 and 9:16), −13.8 to −14.8 LUFS |
+| Thumbnails | ✅ 14 from genuine gameplay frames: the main collage in landscape and portrait, plus one landscape and one portrait per game |
+| Render validation (`npm run validate:renders`) | ✅ **15/15**: H.264 High L4.2, yuv420p, BT.709, 60 fps, AAC 48 kHz, faststart, exact duration, regular frame timing, A/V matched, loudness and true peak, no black outside the intro. Contact sheets were reviewed by eye. |
+| Release package (`npm run package:release`) | ✅ 29 deliverables (213.8 MB) with final names, `MANIFEST.json`, `SHA256SUMS.txt`, `RELEASE_NOTES.md`, `SOCIAL_COPY.md` |
+| Tests (`npm test`) | ✅ 34/34, including safe-area placement and anchor resolution in every format and audio variant |
+| GitHub repository | ✅ history pushed to [`officialinspire/INSPIRE-SHOWREEL`](https://github.com/officialinspire/INSPIRE-SHOWREEL); [officialinspire/INSPIRE-SHOWREEL#1](https://github.com/officialinspire/INSPIRE-SHOWREEL/pull/1) merged to `main` |
+| Production workflow | ✅ registered and active on `main` (`.github/workflows/production.yml`, manual). It has **not run yet**: this session may not dispatch workflows (HTTP 403). |
+| **GitHub release** | ❌ **not created**: this session may not create releases (HTTP 403 "not permitted for this session type"). The package is built and validated; to publish it, run the workflow (see Blockers). |
+
+## QA pass (2026-11-24)
+
+Every rendered file was reviewed against each item below. Anything found was fixed and the affected videos re-rendered.
+
+| Check | Method | Result |
+|---|---|---|
+| Original INSPIRE intro | PSNR of the trailer's first 5.8 s against the original file | ✅ 55.2 dB (scaling only); its soundtrack is untouched |
+| Branding and titles | Contact sheets | ✅ titles THE HARDIGAN BOYS, STICKS & BONES, INSPIRE CARD PARLOR, SHELLS & FEATHERS, GRIDLOCK and EMOJI ELEMENTS match each game's own name; the end card reads ENTER THE INSPIREVERSE / PLAY FREE / WWW.INSPIRECLOTHING.ART |
+| Genuine gameplay | Clip sources in each render's `.json`; every clip resolves to a capture take and event | ✅ |
+| Transitions and pacing | Bar-locked timeline: cuts every 1–2 bars at 136 BPM, dips between sections, a flash at the drop | ✅ |
+| Black frames and stutter | `blackdetect`, packet timestamps | ✅ 0 s of black outside the intro. 0 irregular frame intervals: every frame is exactly 1/60 s, so the edit adds no dropped or doubled frames. See the note on page fps below. |
+| Typography and platform-safe placement | Safe areas per format, `tests/graphics.test.js` | 🔧 **fixed**: in 9:16, montage labels, the highlight brand tag and the end card had reached into the Reels/TikTok/Shorts UI zones (bottom ~22%, right ~16%). They now stay inside the safe area. |
+| Aspect ratios and readable gameplay | ffprobe sizes, contact sheets | ✅ 1920×1080, 1080×1920 and 1080×1080 are separate compositions with no blind crops. Emoji Elements is fitted whole in 1:1, which is small but keeps both life totals and the mana counter: a known limitation. |
+| Audio sync | Stream start times, A/V length | ✅ both streams start at 0, and lengths match within 50 ms |
+| Loudness and clipping | EBU R128 with true peak | ✅ −13.8 to −14.8 LUFS, true peak ≤ −1.9 dBFS (4× oversampled limiter) |
+| MP4 compatibility | ffprobe, atom order | 🔧 **fixed**: H.264 level 5.0 → **4.2**, and the files were untagged → **BT.709** (captures converted from BT.601). Also verified: avc1/mp4a, `moov` before `mdat`, yuv420p. |
+
+### Render validation (`renders/validation.json`)
+
+| File | Length | Size | Level / colour | Loudness | True peak | Frames (regular) | A/V Δ | Black outside intro | Result |
+|---|---|---|---|---|---|---|---|---|---|
+| `renders/trailer/enter-the-inspireverse-2026-16x9.mp4` | 57.05 s | 1920×1080 @ 60 | 4.2 / bt709 | -13.9 LUFS | -2 dBFS | 3423 | 0 s | 0 s | ✅ |
+| `renders/trailer/enter-the-inspireverse-2026-1x1.mp4` | 57.05 s | 1080×1080 @ 60 | 4.2 / bt709 | -13.9 LUFS | -2 dBFS | 3423 | 0 s | 0 s | ✅ |
+| `renders/trailer/enter-the-inspireverse-2026-9x16.mp4` | 57.05 s | 1080×1920 @ 60 | 4.2 / bt709 | -13.9 LUFS | -2 dBFS | 3423 | 0 s | 0 s | ✅ |
+| `renders/highlights/card-parlor-16x9.mp4` | 14.998 s | 1920×1080 @ 60 | 4.2 / bt709 | -14.3 LUFS | -2 dBFS | 899 | 0.015 s | 0 s | ✅ |
+| `renders/highlights/card-parlor-9x16.mp4` | 15 s | 1080×1920 @ 60 | 4.2 / bt709 | -14.3 LUFS | -2 dBFS | 900 | 0.003 s | 0 s | ✅ |
+| `renders/highlights/emoji-elements-16x9.mp4` | 14.999 s | 1920×1080 @ 60 | 4.2 / bt709 | -14.5 LUFS | -2 dBFS | 899 | 0.016 s | 0 s | ✅ |
+| `renders/highlights/emoji-elements-9x16.mp4` | 15 s | 1080×1920 @ 60 | 4.2 / bt709 | -14.6 LUFS | -2 dBFS | 900 | 0.003 s | 0 s | ✅ |
+| `renders/highlights/gridlock-16x9.mp4` | 15 s | 1920×1080 @ 60 | 4.2 / bt709 | -14 LUFS | -2 dBFS | 900 | 0.003 s | 0 s | ✅ |
+| `renders/highlights/gridlock-9x16.mp4` | 15 s | 1080×1920 @ 60 | 4.2 / bt709 | -13.8 LUFS | -2 dBFS | 900 | 0.003 s | 0 s | ✅ |
+| `renders/highlights/hardigan-boys-16x9.mp4` | 15 s | 1920×1080 @ 60 | 4.2 / bt709 | -14.6 LUFS | -2.1 dBFS | 900 | 0.003 s | 0 s | ✅ |
+| `renders/highlights/hardigan-boys-9x16.mp4` | 15 s | 1080×1920 @ 60 | 4.2 / bt709 | -14.6 LUFS | -2.1 dBFS | 900 | 0.003 s | 0 s | ✅ |
+| `renders/highlights/shells-and-feathers-16x9.mp4` | 15 s | 1920×1080 @ 60 | 4.2 / bt709 | -14.1 LUFS | -2.1 dBFS | 899 | 0.017 s | 0 s | ✅ |
+| `renders/highlights/shells-and-feathers-9x16.mp4` | 14.999 s | 1080×1920 @ 60 | 4.2 / bt709 | -14 LUFS | -2.1 dBFS | 899 | 0.016 s | 0 s | ✅ |
+| `renders/highlights/sticks-and-bones-16x9.mp4` | 15 s | 1920×1080 @ 60 | 4.2 / bt709 | -14.8 LUFS | -1.9 dBFS | 900 | 0.003 s | 0 s | ✅ |
+| `renders/highlights/sticks-and-bones-9x16.mp4` | 15 s | 1080×1920 @ 60 | 4.2 / bt709 | -14.7 LUFS | -2 dBFS | 900 | 0.003 s | 0 s | ✅ |
+
+### Release package (`release/`, git-ignored)
+
+| File | Resolution | Duration | Size | SHA-256 (first 12) |
+|---|---|---|---|---|
+| `INSPIRE_SHOWREEL_2026_LANDSCAPE.mp4` | 1920×1080 @ 60 | 57.05 s | 40.1 MB | 3a6bdf5622aa |
+| `INSPIRE_SHOWREEL_2026_VERTICAL.mp4` | 1080×1920 @ 60 | 57.05 s | 33.8 MB | eb0742835f0b |
+| `INSPIRE_SHOWREEL_2026_SQUARE.mp4` | 1080×1080 @ 60 | 57.05 s | 21.8 MB | 2f35c741945f |
+| `INSPIRE_SHOWREEL_2026_HARDIGAN_BOYS_15S_LANDSCAPE.mp4` | 1920×1080 @ 60 | 15.00 s | 10.7 MB | 16c01437c689 |
+| `INSPIRE_SHOWREEL_2026_HARDIGAN_BOYS_15S_VERTICAL.mp4` | 1080×1920 @ 60 | 15.00 s | 6.4 MB | c437bad87c88 |
+| `INSPIRE_SHOWREEL_2026_STICKS_AND_BONES_15S_LANDSCAPE.mp4` | 1920×1080 @ 60 | 15.00 s | 10.4 MB | ac9d33cd34ce |
+| `INSPIRE_SHOWREEL_2026_STICKS_AND_BONES_15S_VERTICAL.mp4` | 1080×1920 @ 60 | 15.00 s | 9.0 MB | 23c0276db2cf |
+| `INSPIRE_SHOWREEL_2026_CARD_PARLOR_15S_LANDSCAPE.mp4` | 1920×1080 @ 60 | 15.00 s | 11.4 MB | 91cf1ac8cd09 |
+| `INSPIRE_SHOWREEL_2026_CARD_PARLOR_15S_VERTICAL.mp4` | 1080×1920 @ 60 | 15.00 s | 10.1 MB | 20d82751a158 |
+| `INSPIRE_SHOWREEL_2026_SHELLS_AND_FEATHERS_15S_LANDSCAPE.mp4` | 1920×1080 @ 60 | 15.00 s | 10.5 MB | 7e06df522202 |
+| `INSPIRE_SHOWREEL_2026_SHELLS_AND_FEATHERS_15S_VERTICAL.mp4` | 1080×1920 @ 60 | 15.00 s | 9.3 MB | dd381db362c6 |
+| `INSPIRE_SHOWREEL_2026_GRIDLOCK_15S_LANDSCAPE.mp4` | 1920×1080 @ 60 | 15.00 s | 10.2 MB | 79ff71c6c8a5 |
+| `INSPIRE_SHOWREEL_2026_GRIDLOCK_15S_VERTICAL.mp4` | 1080×1920 @ 60 | 15.00 s | 9.6 MB | e5a0670a5cf9 |
+| `INSPIRE_SHOWREEL_2026_EMOJI_ELEMENTS_15S_LANDSCAPE.mp4` | 1920×1080 @ 60 | 15.00 s | 8.4 MB | e0d6f2df295e |
+| `INSPIRE_SHOWREEL_2026_EMOJI_ELEMENTS_15S_VERTICAL.mp4` | 1080×1920 @ 60 | 15.00 s | 8.5 MB | f00e284d32f0 |
+| `INSPIRE_SHOWREEL_2026_THUMB_LANDSCAPE.jpg` | 1920×1080 | — | 0.4 MB | f1fa94022f21 |
+| `INSPIRE_SHOWREEL_2026_THUMB_PORTRAIT.jpg` | 1080×1920 | — | 0.4 MB | ccf0efae0919 |
+| `INSPIRE_SHOWREEL_2026_HARDIGAN_BOYS_THUMB_LANDSCAPE.jpg` | 1920×1080 | — | 0.3 MB | c46b8fbbea56 |
+| `INSPIRE_SHOWREEL_2026_HARDIGAN_BOYS_THUMB_PORTRAIT.jpg` | 1080×1920 | — | 0.1 MB | 206e2a327d9e |
+| `INSPIRE_SHOWREEL_2026_STICKS_AND_BONES_THUMB_LANDSCAPE.jpg` | 1920×1080 | — | 0.3 MB | e880d9ea8cab |
+| `INSPIRE_SHOWREEL_2026_STICKS_AND_BONES_THUMB_PORTRAIT.jpg` | 1080×1920 | — | 0.3 MB | 6fb38a7c710b |
+| `INSPIRE_SHOWREEL_2026_CARD_PARLOR_THUMB_LANDSCAPE.jpg` | 1920×1080 | — | 0.3 MB | 4819fe0ba862 |
+| `INSPIRE_SHOWREEL_2026_CARD_PARLOR_THUMB_PORTRAIT.jpg` | 1080×1920 | — | 0.2 MB | 6b67afcfdf4a |
+| `INSPIRE_SHOWREEL_2026_SHELLS_AND_FEATHERS_THUMB_LANDSCAPE.jpg` | 1920×1080 | — | 0.2 MB | 697de8776a70 |
+| `INSPIRE_SHOWREEL_2026_SHELLS_AND_FEATHERS_THUMB_PORTRAIT.jpg` | 1080×1920 | — | 0.2 MB | 200c0241adc7 |
+| `INSPIRE_SHOWREEL_2026_GRIDLOCK_THUMB_LANDSCAPE.jpg` | 1920×1080 | — | 0.4 MB | 97ce0f499728 |
+| `INSPIRE_SHOWREEL_2026_GRIDLOCK_THUMB_PORTRAIT.jpg` | 1080×1920 | — | 0.5 MB | 6eaaade12f9d |
+| `INSPIRE_SHOWREEL_2026_EMOJI_ELEMENTS_THUMB_LANDSCAPE.jpg` | 1920×1080 | — | 0.1 MB | fa08e7c2630c |
+| `INSPIRE_SHOWREEL_2026_EMOJI_ELEMENTS_THUMB_PORTRAIT.jpg` | 1080×1920 | — | 0.1 MB | 873b2d682113 |
+
+Total: 29 files, 213.8 MB.
+
+
+Download links in `release/RELEASE_NOTES.md` point at `https://github.com/officialinspire/INSPIRE-SHOWREEL/releases/download/showreel-2026-v1.0.0/<file>`. They resolve only once the release has been published (see Blockers).
 
 ## Trailer: ENTER THE INSPIREVERSE (2026)
 
-Files: `renders/trailer/enter-the-inspireverse-2026-{16x9,9x16,1x1}.mp4`. These are git-ignored; publish them with `npm run release`. Each has a `.json` report (full timeline, source takes, loudness) and a `.contact.jpg` sheet.
+Release names: `INSPIRE_SHOWREEL_2026_{LANDSCAPE,VERTICAL,SQUARE}.mp4`. Renders: `renders/trailer/enter-the-inspireverse-2026-<fmt>.mp4`, each with a `.json` timeline report and a `.contact.jpg` sheet.
 
 **Structure.** 57.05 s: the original 5.87 s studio intro, then 29 bars of the music bed at 136 BPM (1.7647 s per bar). Every cut lands on a bar line.
 
@@ -48,26 +129,6 @@ Files: `renders/trailer/enter-the-inspireverse-2026-{16x9,9x16,1x1}.mp4`. These 
 - The mix is two-pass linear-normalised to −14 LUFS, then limited 4× oversampled. Measured: −13.9 LUFS, −2.0 dBFS true peak.
 
 **Highlights.** `renders/highlights/<game>-{16x9,9x16}.mp4`, 15.0 s each. Each opens with the game's title and closes with the INSPIRE logo and PLAY FREE · WWW.INSPIRECLOTHING.ART. These use the game's own full sound (its music and effects), loudness-normalised the same way.
-
-### Render validation (`renders/validation.json`)
-
-| File | Length | Size | Loudness | True peak | Bitrate | Black outside intro | Faststart | Result |
-|---|---|---|---|---|---|---|---|---|
-| `renders/trailer/enter-the-inspireverse-2026-16x9.mp4` | 57.05 s | 1920×1080 @ 60 | -13.9 LUFS | -2 dBFS | 5848 kb/s | 0 s | yes | ✅ |
-| `renders/trailer/enter-the-inspireverse-2026-1x1.mp4` | 57.05 s | 1080×1080 @ 60 | -13.9 LUFS | -2 dBFS | 3187 kb/s | 0 s | yes | ✅ |
-| `renders/trailer/enter-the-inspireverse-2026-9x16.mp4` | 57.05 s | 1080×1920 @ 60 | -13.9 LUFS | -2 dBFS | 4905 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/card-parlor-16x9.mp4` | 14.998 s | 1920×1080 @ 60 | -14.3 LUFS | -2 dBFS | 6355 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/card-parlor-9x16.mp4` | 15 s | 1080×1920 @ 60 | -14.3 LUFS | -2 dBFS | 5607 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/emoji-elements-16x9.mp4` | 14.999 s | 1920×1080 @ 60 | -14.5 LUFS | -2 dBFS | 4624 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/emoji-elements-9x16.mp4` | 15 s | 1080×1920 @ 60 | -14.6 LUFS | -2 dBFS | 4666 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/gridlock-16x9.mp4` | 15 s | 1920×1080 @ 60 | -14 LUFS | -2 dBFS | 5685 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/gridlock-9x16.mp4` | 15 s | 1080×1920 @ 60 | -13.8 LUFS | -2 dBFS | 5333 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/hardigan-boys-16x9.mp4` | 15 s | 1920×1080 @ 60 | -14.6 LUFS | -2.1 dBFS | 5948 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/hardigan-boys-9x16.mp4` | 15 s | 1080×1920 @ 60 | -14.6 LUFS | -2.1 dBFS | 3602 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/shells-and-feathers-16x9.mp4` | 15 s | 1920×1080 @ 60 | -14.1 LUFS | -2.1 dBFS | 5692 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/shells-and-feathers-9x16.mp4` | 14.999 s | 1080×1920 @ 60 | -14 LUFS | -2.1 dBFS | 5132 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/sticks-and-bones-16x9.mp4` | 15 s | 1920×1080 @ 60 | -14.8 LUFS | -1.9 dBFS | 5807 kb/s | 0 s | yes | ✅ |
-| `renders/highlights/sticks-and-bones-9x16.mp4` | 15 s | 1080×1920 @ 60 | -14.7 LUFS | -2 dBFS | 4991 kb/s | 0 s | yes | ✅ |
 
 ## Gameplay capture
 
@@ -245,11 +306,14 @@ SHA-256 values for all of these are in `config/games.json`. The title cards are 
 
 ## Blockers / findings
 
-1. **The GitHub repository does not exist, so nothing has been pushed.** `officialinspire/INSPIRE-SHOWREEL` was never created: this session's GitHub access covers only existing repositories, and both creation and push are refused (HTTP 403). All work is committed locally on `main`. To unblock, create an empty `officialinspire/INSPIRE-SHOWREEL`, then run `git push -u origin main`.
+1. **The GitHub release has not been published yet: a session permission is missing, not a pipeline failure.** This session's GitHub access can push and merge PRs but cannot create releases or dispatch workflows (both HTTP 403). The validated package is complete in `release/`. To publish:
+   - **Recommended:** go to GitHub → *Actions* → *Production* → *Run workflow*, and choose `mode: full`, `publish_release: true`, `release_tag: showreel-2026-v1.0.0`. The workflow captures, renders, validates and packages on a fresh runner, then publishes the release with its own `GITHUB_TOKEN` (`contents: write`) and verifies every asset by download (`npm run verify:release`). Expect about 2 hours. Its files are new renders from new captures, held to the same validation.
+   - **Or, from a machine with these files and `gh` authenticated:** copy `release/`, then run `npm run release:github -- showreel-2026-v1.0.0` and `npm run verify:release -- showreel-2026-v1.0.0`.
+   Until one of these runs, the release's download links do not resolve.
 2. **Music approval.** The trailer bed (*Emoji Elements — Celestial Battle Theme*) and the highlight audio are OFFICIAL INSPIRE soundtracks shipped in the studio's own game repos. Card Parlor's music README states its tracks were "uploaded by OFFICIAL INSPIRE". No repo carries an explicit music licence file, so **the owner should confirm music rights before public release.** Emoji Elements' effects are Kenney CC0 (licence notices are in that repo). Fonts are Inter (SIL OFL).
 3. **No GPU in the capture machine.** See "Page fps" above. Capturing on a machine with a GPU would make the heavy moments smoother. The Chromium flags were tuned for CPU rendering (`--use-angle=swiftshader-webgl --disable-gpu-rasterization`), which took GRIDLOCK's turn animations from 6–16 to 53–61 fps.
 4. **Portrait not captured for The Hardigan Boys.** Its scenes are fixed 16:9 art with native-coordinate hotspots, and the game letterboxes them on tall screens. 9:16 deliverables fit the 16:9 stage instead.
-5. **Gameplay is live, so takes differ.** CPU opponents and deals are random, so event counts vary between takes. Trailer anchors use only events present in every take, and `npm test` resolves them all. One Emoji Elements setup can end the match early; the runner's retry handled it.
+5. **Gameplay is live, so takes differ.** CPU opponents and deals are random, so event counts vary between takes. Trailer anchors use only events present in every take, and `npm test` resolves them all. One Emoji Elements setup can end the match early; the runner's retry handled it. On a fresh capture (for example in CI), a clip whose event number does not occur uses that take's last occurrence of the same event and logs a warning. A missing anchor still fails.
 6. **Corrupt track in Inspire-card-parlor (not fixed: read-only).** `public/assets/music/downtown-fxbg-saturday-walk.m4a` has no moov atom.
 7. **Mislabelled container in Inspire-card-parlor.** `inspire-card-parlor-menu-track.m4a` contains MP3 data.
 8. **`https://officialinspire.github.io/` returns 404**, because there is no organisation Pages site. The end card uses WWW.INSPIRECLOTHING.ART, the site the games link to.
@@ -257,6 +321,7 @@ SHA-256 values for all of these are in `config/games.json`. The title cards are 
 
 ## Next steps
 
-- [ ] Create the GitHub repo and push `main` (blocker 1). Then `npm run release` the approved cut as release assets.
-- [ ] Owner sign-off on music rights (blocker 2) and on the cut itself.
-- [ ] Optional: re-capture on a GPU machine for smoother heavy scenes. The pipeline is unchanged: `npm run capture:all && npm run capture:sfx && npm run render:all`.
+- [ ] **Publish the release:** run *Actions → Production → Run workflow* with `mode: full`, `publish_release: true` (Blocker 1). Then check the release page, and that the workflow's *Publish and verify GitHub release* step passed.
+- [ ] Owner sign-off on music rights (Blocker 2) and on the cut, before any public posting. `SOCIAL_COPY.md` is ready, but nothing is posted automatically.
+- [ ] Optional: a `mode: check` run first (about 5 minutes) confirms the runner environment before the 2-hour run.
+- [ ] Optional: capture on a machine with a GPU for smoother heavy scenes (Blocker 3).
