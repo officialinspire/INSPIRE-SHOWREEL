@@ -53,8 +53,11 @@ async function check(cfg, file, spec, targets) {
   want(Math.abs(I - targets.I) <= 1, `integrated loudness ${I} LUFS (target ${targets.I})`);
   want(TP <= targets.TP + 0.3, `true peak ${TP} dBFS (limit ${targets.TP})`);
   const blacks = [...err.matchAll(/black_start:([\d.]+) black_end:([\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
-  const blackSec = +blacks.reduce((t, [s, e]) => t + e - s, 0).toFixed(2);
-  want(blackSec < 1.5, `${blackSec}s of black frames`);
+  // Black inside the original studio intro (its own black background, letterboxed in tall formats) is intended.
+  const introEnd = spec.introSec ? spec.introSec + 0.15 : 0;
+  const unintended = blacks.map(([s, e]) => [Math.max(s, introEnd), e]).filter(([s, e]) => e > s);
+  const blackSec = +unintended.reduce((t, [s, e]) => t + e - s, 0).toFixed(2);
+  want(blackSec < 1.0, `${blackSec}s of black frames outside the intro`);
   // Contact sheet: 12 evenly spaced frames.
   const sheet = file.replace(/\.mp4$/, '.contact.jpg');
   const cols = spec.width > spec.height ? 4 : spec.width === spec.height ? 4 : 6;

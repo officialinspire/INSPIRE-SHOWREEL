@@ -50,7 +50,7 @@ main(async () => {
       const programme = path.join(work, 'programme.mkv');
       await R.concat(files, programme);
       const audio = path.join(work, 'mix.wav');
-      const loud = await R.mixAudio(edl, programme, audio, { music: null, totalSec: tl.totalSec });
+      const loud = await R.mixAudio(edl, programme, audio, { music: null, totalSec: await R.videoSec(programme, edl.fps) });
       const out = path.join(outDir, `${g.id}-${format}.mp4`);
       await R.deliver(edl, programme, audio, out);
       fs.writeFileSync(out.replace(/\.mp4$/, '.json'), JSON.stringify({

@@ -31,7 +31,8 @@ function finish(input, { width: W, height: H }, { durSec, pushIn = 0, vignette =
   const f = [];
   if (pushIn > 0) f.push(`scale=w='trunc(${W}*(1+${pushIn}*t/${durSec.toFixed(4)})/2)*2':h=-2:eval=frame:flags=bicubic`, `crop=${W}:${H}`);
   if (vignette > 0) f.push(`vignette=angle=${vignette}`);
-  f.push(`fps=${fps}`, 'format=yuv420p');
+  // Clone the last frame if a source runs short, so every intermediate has its exact frame count.
+  f.push(`fps=${fps}`, 'tpad=stop_mode=clone:stop_duration=0.5', 'format=yuv420p');
   if (fadeIn > 0) f.push(`fade=t=in:st=0:d=${fadeIn}:color=${fadeInColor}`);
   if (fadeOut > 0) f.push(`fade=t=out:st=${(durSec - fadeOut).toFixed(4)}:d=${fadeOut}`);
   return { graph: `${input}${f.join(',')}[${label}_fin]`, out: `[${label}_fin]` };

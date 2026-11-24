@@ -62,7 +62,7 @@ async function renderIntro(cfg, edl, fmt, out) {
   const { out: dj } = await run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file]);
   const frames = Math.round(Number(dj) * edl.fps);
   const { width: W, height: H } = fmt;
-  const vf = `scale=${W}:${H}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,fps=${edl.fps},format=yuv420p`;
+  const vf = `scale=${W}:${H}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,fps=${edl.fps},tpad=stop_mode=clone:stop_duration=0.5,format=yuv420p`;
   await run('ffmpeg', ['-y', '-hide_banner', '-nostdin', '-i', file, '-filter_complex', `[0:v]${vf}[v];[0:a]${A_FMT},apad,atrim=0:${(frames / edl.fps).toFixed(4)}[a]`, '-map', '[v]', '-map', '[a]', '-frames:v', String(frames), ...interArgs(edl), out]);
   return frames / edl.fps;
 }
@@ -83,19 +83,19 @@ async function mixAudio(edl, programme, out, { music, totalSec }) {
     const d = edl.audio.duck;
     const ms = Math.round(music.atSec * 1000);
     graph = [
-      `[0:a]${A_FMT},asplit=2[key][dry]`,
+      `[0:a]${A_FMT},apad,asplit=2[key][dry]`,
       `[1:a]${A_FMT},atrim=start=${music.fromSec.toFixed(4)}:duration=${music.durSec.toFixed(4)},asetpts=PTS-STARTPTS,volume=${music.gain},afade=t=in:st=0:d=${music.fadeIn},afade=t=out:st=${(music.durSec - music.fadeOut).toFixed(4)}:d=${music.fadeOut},adelay=${ms}|${ms},apad[mus]`,
       `[mus][key]sidechaincompress=threshold=${d.threshold}:ratio=${d.ratio}:attack=${d.attack}:release=${d.release}:makeup=${d.makeup}[duck]`,
       `[duck][dry]amix=inputs=2:normalize=0:duration=first,atrim=0:${totalSec.toFixed(4)}[mix]`,
     ].join(';');
   } else {
-    graph = `[0:a]${A_FMT},atrim=0:${totalSec.toFixed(4)}[mix]`;
+    graph = `[0:a]${A_FMT},apad,atrim=0:${totalSec.toFixed(4)}[mix]`;
   }
   const premix = out.replace(/\.wav$/, '.premix.wav');
   await run('ffmpeg', ['-y', '-hide_banner', '-nostdin', ...inputs, '-filter_complex', graph, '-map', '[mix]', '-c:a', 'pcm_f32le', premix]);
   const { err } = await run('ffmpeg', ['-hide_banner', '-nostdin', '-i', premix, '-af', `loudnorm=I=${L.I}:TP=${L.TP}:LRA=${L.LRA}:print_format=json`, '-f', 'null', '-']);
   const m = JSON.parse(err.slice(err.lastIndexOf('{'), err.lastIndexOf('}') + 1));
-  const af = `loudnorm=I=${L.I}:TP=${L.TP}:LRA=${L.LRA}:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true,aresample=48000,alimiter=limit=${Math.pow(10, (L.TP - 0.2) / 20).toFixed(4)}:level=false:attack=3:release=60`;
+  const af = `loudnorm=I=${L.I}:TP=${L.TP}:LRA=${L.LRA}:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true,aresample=48000,aresample=192000,alimiter=limit=${Math.pow(10, (L.TP - 0.6) / 20).toFixed(4)}:level=false:attack=2:release=60,aresample=48000`; // 4x oversampled: catches inter-sample peaks
   await run('ffmpeg', ['-y', '-hide_banner', '-nostdin', '-i', premix, '-af', af, '-ar', '48000', '-c:a', 'pcm_s16le', out]);
   return { measuredIn: { I: Number(m.input_i), TP: Number(m.input_tp), LRA: Number(m.input_lra) } };
 }
@@ -107,9 +107,15 @@ async function deliver(edl, video, audio, out) {
     '-c:a', 'aac', '-b:a', e.audioBitrate, '-ar', String(e.sampleRate), '-ac', '2', '-movflags', '+faststart', '-shortest', out]);
 }
 
+/** Exact video length of an intermediate/programme (frames / fps). */
+async function videoSec(file, fps) {
+  const { out } = await run('ffprobe', ['-v', 'error', '-count_packets', '-select_streams', 'v:0', '-show_entries', 'stream=nb_read_packets', '-of', 'csv=p=0', file]);
+  return Number(out.trim()) / fps;
+}
+
 async function pool(items, n, fn) {
   const queue = [...items];
   await Promise.all(Array.from({ length: n }, async () => { while (queue.length) await fn(queue.shift()); }));
 }
 
-module.exports = { renderItem, renderIntro, concat, mixAudio, deliver, pool, log };
+module.exports = { renderItem, renderIntro, concat, mixAudio, deliver, pool, videoSec, log };

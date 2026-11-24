@@ -64,7 +64,7 @@ main(async () => {
 
     const programme = path.join(work, 'programme.mkv');
     await R.concat(files, programme);
-    const totalSec = introSec + tl.musicSec;
+    const totalSec = await R.videoSec(programme, edl.fps); // measured, so audio always matches picture
     const musicFile = config.vendorPath(cfg, cfg.games.games.find((g) => g.id === edl.music.game), 'music');
     if (!fs.existsSync(musicFile)) throw new Error(`music bed missing (${musicFile}) — run npm run fetch`);
     const m = edl.music;
@@ -75,7 +75,7 @@ main(async () => {
     await R.deliver(edl, programme, audio, out);
     const report = {
       title: edl.title, subtitle: edl.subtitle, format, ...fmt, fps: edl.fps, file: path.relative(cfg.paths.root, out), renderedAt: new Date().toISOString(),
-      expectedSec: +totalSec.toFixed(3), introSec: +introSec.toFixed(3), variant,
+      expectedSec: +(introSec + tl.musicSec).toFixed(3), programmeSec: +totalSec.toFixed(3), introSec: +introSec.toFixed(3), variant,
       music: { source: path.relative(cfg.paths.root, musicFile), fromSec: +music.fromSec.toFixed(3), bpm: m.bpm, bars: tl.totalBars },
       premixLoudness: loud.measuredIn,
       timeline: tl.clips.map((c) => ({ kind: c.kind, game: c.game, shot: c.shot, take: c.src.take, sourceStart: c.src.start, sec: +c.durSec.toFixed(3), bars: c.bars, framing: c.framing, title: c.title?.text, label: c.label?.text })),
