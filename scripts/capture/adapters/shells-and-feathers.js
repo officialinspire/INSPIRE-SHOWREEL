@@ -104,6 +104,8 @@ async function openCheckers(api) {
 }
 
 module.exports = {
+  // SFX-only takes: gameplay.mp3 is the score; piece, select and result sounds stay.
+  sfxOnly: { block: /\/gameplay\.mp3$/i },
   layouts: ['landscape', 'portrait'],
   async boot(api) {
     // The start button pulses, so clicks are forced; the intro plays once per browser session.

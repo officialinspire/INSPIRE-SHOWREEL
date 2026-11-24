@@ -28,17 +28,18 @@ function loadManifest(file, game) {
   return { game: game.id, title: game.title, repo: game.repo, commit: game.commit, url: game.url, shots: [] };
 }
 
-async function runShot({ browser, cfg, game, adapter, shot, layout, size, audio, display, outDir, attempt }) {
+async function runShot({ browser, cfg, game, adapter, shot, layout, size, audio, display, outDir, attempt, variant }) {
   const capCfg = cfg.trailer.capture;
   const shotDir = path.join(outDir, shot.id);
   fs.rmSync(shotDir, { recursive: true, force: true });
   fs.mkdirSync(shotDir, { recursive: true });
   const file = path.join(outDir, `${shot.id}.mkv`);
   const stats = {};
-  const { ctx, page } = await openPage(browser, { ...size, touch: layout === 'portrait', stats });
+  const sfx = variant === 'sfx' ? adapter.sfxOnly : null;
+  const { ctx, page } = await openPage(browser, { ...size, touch: layout === 'portrait', stats, blockMedia: sfx?.block || null, storage: sfx?.storage || null });
   const api = createApi({ page, ctx, layout, size, game, shotDir, log: log.info });
   const recorder = new Recorder({ display, ...size, fps: capCfg.fps, audio, out: file, crf: capCfg.crf });
-  const result = { id: shot.id, title: shot.title, layout, attempt, file: null, startedAt: new Date().toISOString() };
+  const result = { id: shot.id, title: shot.title, layout, variant, attempt, file: null, startedAt: new Date().toISOString() };
   try {
     const url = adapter.url ? adapter.url(game, layout) : game.url;
     result.pageUrl = url;
@@ -66,6 +67,7 @@ async function runShot({ browser, cfg, game, adapter, shot, layout, size, audio,
   result.events = api.events;
   result.analyticsBlocked = stats.analyticsBlocked || 0;
   result.analyticsHosts = stats.analyticsHosts || [];
+  if (variant === 'sfx') result.musicBlocked = stats.musicBlocked || 0;
   result.pageErrors = stats.pageErrors || [];
   if (fs.existsSync(file)) {
     result.file = path.relative(cfg.paths.root, file);
@@ -93,7 +95,9 @@ async function captureGame({ cfg, game, adapter, audio, opts }) {
     const size = capCfg.layouts[layout];
     const shots = adapter.shots.filter((s) => (!s.layouts || s.layouts.includes(layout)) && (!opts.shots?.length || opts.shots.includes(s.id)));
     if (!shots.length) continue;
-    const outDir = path.join(gameDir, layout);
+    const variant = opts.variant || 'full';
+    if (variant === 'sfx' && !adapter.sfxOnly) throw new Error(`${game.id}: adapter has no sfxOnly rule`);
+    const outDir = path.join(gameDir, layout, variant === 'sfx' ? 'sfx' : '');
     fs.mkdirSync(outDir, { recursive: true });
     const screen = await startDisplay(size);
     let browser;
@@ -104,15 +108,15 @@ async function captureGame({ cfg, game, adapter, audio, opts }) {
         let result;
         for (let attempt = 1; attempt <= opts.retries + 1; attempt++) {
           if (!browser.isConnected()) browser = await launch({ display: screen.display, audio, ...size, extraArgs: capCfg.chromiumArgs });
-          log.info(`${game.id} ${layout} ${shot.id}: attempt ${attempt}`);
-          result = await runShot({ browser, cfg, game, adapter, shot, layout, size, audio, display: screen.display, outDir, attempt });
+          log.info(`${game.id} ${layout}${variant === 'sfx' ? ' [sfx]' : ''} ${shot.id}: attempt ${attempt}`);
+          result = await runShot({ browser, cfg, game, adapter, shot, layout, size, audio, display: screen.display, outDir, attempt, variant });
           const m = result.validation.metrics || {};
           const line = `${game.id} ${layout} ${shot.id}: ${result.status} ${m.durationSec ?? '?'}s @ ${m.captureFps ?? '?'} fps (page ${result.pageFps ?? '?'} fps), audio max ${m.audioMaxDb ?? '—'} dB`;
           if (result.status === 'fail') log.err(`${line} — ${result.error || result.validation.problems.join('; ')}`);
           else log[result.status === 'pass' ? 'ok' : 'warn'](`${line}${result.validation.warnings.length ? ` — ${result.validation.warnings.join('; ')}` : ''}`);
           if (result.status !== 'fail') break;
         }
-        manifest.shots = manifest.shots.filter((s) => !(s.id === shot.id && s.layout === layout)).concat(result);
+        manifest.shots = manifest.shots.filter((s) => !(s.id === shot.id && s.layout === layout && (s.variant || 'full') === variant)).concat(result);
         manifest.updatedAt = new Date().toISOString();
         fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2));
       }
@@ -130,15 +134,18 @@ function summarize(manifest, adapter, cfg) {
   const stale = manifest.shots.filter((s) => !order.includes(s.id) || !adapter.layouts.includes(s.layout));
   for (const s of stale) {
     if (s.file) fs.rmSync(path.join(cfg.paths.root, s.file), { force: true });
-    fs.rmSync(path.join(cfg.paths.capture, manifest.game, s.layout, s.id), { recursive: true, force: true });
+    fs.rmSync(path.join(cfg.paths.capture, manifest.game, s.layout, s.variant === 'sfx' ? 'sfx' : '', s.id), { recursive: true, force: true });
   }
   manifest.shots = manifest.shots.filter((s) => !stale.includes(s));
-  manifest.shots.sort((a, b) => a.layout.localeCompare(b.layout) || order.indexOf(a.id) - order.indexOf(b.id));
-  const usable = (l) => +manifest.shots.filter((s) => s.layout === l && s.status !== 'fail').reduce((t, s) => t + (s.validation.metrics.usableSec || 0), 0).toFixed(1);
+  manifest.shots.sort((a, b) => (a.variant || 'full').localeCompare(b.variant || 'full') || a.layout.localeCompare(b.layout) || order.indexOf(a.id) - order.indexOf(b.id));
+  // The summary (and "complete") counts the full-audio takes; SFX-only takes are editing stems.
+  const full = manifest.shots.filter((s) => (s.variant || 'full') === 'full');
+  const usable = (l) => +full.filter((s) => s.layout === l && s.status !== 'fail').reduce((t, s) => t + (s.validation.metrics.usableSec || 0), 0).toFixed(1);
   const goal = cfg.trailer.capture.targetSecPerGame;
   manifest.summary = {};
+  manifest.sfxTakes = manifest.shots.filter((s) => s.variant === 'sfx').map((s) => ({ id: s.id, layout: s.layout, status: s.status, file: s.file, musicBlocked: s.musicBlocked }));
   for (const l of adapter.layouts) {
-    const shots = manifest.shots.filter((s) => s.layout === l);
+    const shots = full.filter((s) => s.layout === l);
     const ok = shots.filter((s) => s.status !== 'fail');
     manifest.summary[l] = {
       shots: shots.length, passed: ok.length, failed: shots.length - ok.length,

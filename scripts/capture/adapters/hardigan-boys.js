@@ -102,6 +102,8 @@ async function finishLivingRoom(api, { fast }) {
 }
 
 module.exports = {
+  // SFX-only takes: every audio/*.mp3 is score; effects are synthesised (SFXGenerator in index.js).
+  sfxOnly: { block: /\/audio\/[^/]+\.mp3$/i },
   layouts: ['landscape'],
   layoutNotes: 'Portrait is not captured: the scenes are fixed 1920x1080 art with native-coordinate hotspots; on a tall screen the game letterboxes the 16:9 stage (verified 2026-11-24 with scripts/capture/explore.js --layout=portrait: a ~720 px band in a 1920 px screen).',
   url: (game) => withParams(game.url, { analytics: 'off' }),

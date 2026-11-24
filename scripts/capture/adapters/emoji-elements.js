@@ -68,6 +68,8 @@ async function playTurn(api, { pace = 450, attack = true } = {}) {
 }
 
 module.exports = {
+  // SFX-only takes: every soundtrack is .mp3; effects come from audio/sfx/sfx-bank.wav (Kenney CC0).
+  sfxOnly: { block: /\.mp3$/i },
   layouts: ['landscape', 'portrait'],
   async boot(api) {
     await api.waitVisible('#clickToStart', 20000);

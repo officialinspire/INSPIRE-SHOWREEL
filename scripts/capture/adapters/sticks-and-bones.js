@@ -57,6 +57,8 @@ async function quickPlay(api) {
 }
 
 module.exports = {
+  // SFX-only takes: music, ambience beds and result stingers are .mp3; tile/table effects are .wav.
+  sfxOnly: { block: /\.mp3$/i },
   layouts: ['landscape', 'portrait'],
   async boot(api) {
     await passGateAndSkipIntro(api, { gate: '[data-act="start"]', video: 'video', skip: '[data-act="intro-skip"]', after: '[data-act="story"]' });

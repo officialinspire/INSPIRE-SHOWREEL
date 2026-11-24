@@ -21,11 +21,11 @@ main(async () => {
       out.push(`| ${g.title} | ${layout} | ${s.passed}/${s.shots} | ${s.usableSec} s | ${s.minCaptureFps ?? '—'} | ${s.complete ? '✅' : '❌'} |`);
     }
     if (m.layoutNotes) details.push(`\n_${g.title}: ${m.layoutNotes}_`);
-    details.push(`\n#### ${g.title}\n`, '| Layout | Shot | Status | Length | Capture fps | Page fps | Audio peak | Static / longest hold | Notes |', '|---|---|---|---|---|---|---|---|---|');
+    details.push(`\n#### ${g.title}\n`, '| Layout | Take | Shot | Status | Length | Capture fps | Page fps | Audio peak | Static / longest hold | Notes |', '|---|---|---|---|---|---|---|---|---|---|');
     for (const s of m.shots) {
       const v = s.validation?.metrics || {};
       const notes = [...(s.validation?.problems || []), ...(s.validation?.warnings || []), s.error].filter(Boolean).join('; ').replace(/\|/g, '/');
-      details.push(`| ${s.layout} | \`${s.id}\` — ${s.title || ''} | ${s.status} (attempt ${s.attempt}) | ${v.durationSec ?? '—'} s | ${v.captureFps ?? '—'} | ${s.pageFps ?? '—'} | ${v.audioMaxDb ?? '—'} dB | ${v.frozenSec ?? '—'} s / ${v.longestFrozenSec ?? '—'} s | ${notes || '—'} |`);
+      details.push(`| ${s.layout} | ${s.variant === 'sfx' ? `SFX-only (${s.musicBlocked} music requests blocked)` : 'full audio'} | \`${s.id}\` — ${s.title || ''} | ${s.status} (attempt ${s.attempt}) | ${v.durationSec ?? '—'} s | ${v.captureFps ?? '—'} | ${s.pageFps ?? '—'} | ${v.audioMaxDb ?? '—'} dB | ${v.frozenSec ?? '—'} s / ${v.longestFrozenSec ?? '—'} s | ${notes || '—'} |`);
     }
     const blocked = m.shots.reduce((t, s) => t + (s.analyticsBlocked || 0), 0);
     details.push(`\nAnalytics requests blocked during capture: ${blocked}. Environment: ${m.environment?.method || '—'}; Chromium ${m.environment?.chromium || '—'}.`);

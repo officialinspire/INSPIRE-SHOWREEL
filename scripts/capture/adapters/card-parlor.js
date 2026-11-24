@@ -92,6 +92,10 @@ async function klondikeStep(api, state) {
 }
 
 module.exports = {
+  // SFX-only takes: recorded music is .m4a/.mp3 and the generative playlists are synthesised, so
+  // the game's own setting is used too: icp:settings is a Partial<Settings> merged over defaults
+  // (src/storage/persistence.ts); musicMuted and ambience come from src/core/defaults.ts.
+  sfxOnly: { block: /\.(m4a|mp3)$/i, storage: { 'icp:settings': { musicMuted: true, ambience: false } } },
   layouts: ['landscape', 'portrait'],
   async boot(api) {
     const enter = 'button:has-text("Enter Parlor")';

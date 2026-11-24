@@ -1,0 +1,461 @@
+{
+  "version": 1,
+  "id": "inspireverse-2026",
+  "title": "ENTER THE INSPIREVERSE",
+  "subtitle": "Official Gameplay Showcase 2026",
+  "output": "enter-the-inspireverse-2026",
+  "fps": 60,
+  "formats": {
+    "16x9": {
+      "width": 1920,
+      "height": 1080
+    },
+    "9x16": {
+      "width": 1080,
+      "height": 1920
+    },
+    "1x1": {
+      "width": 1080,
+      "height": 1080
+    }
+  },
+  "encode": {
+    "codec": "libx264",
+    "preset": "slow",
+    "crf": 17,
+    "profile": "high",
+    "pixFmt": "yuv420p",
+    "audioBitrate": "320k",
+    "sampleRate": 48000
+  },
+  "intermediate": {
+    "preset": "veryfast",
+    "crf": 10
+  },
+  "brand": {
+    "font": "/usr/share/fonts/opentype/inter/InterDisplay-BlackItalic.otf",
+    "fontSub": "/usr/share/fonts/opentype/inter/InterDisplay-SemiBold.otf",
+    "accent": "0xF4C542",
+    "text": "0xFFFFFF",
+    "logo": "assets/branding/inspire-logo.png"
+  },
+  "look": {
+    "vignette": 0.3,
+    "pushIn": 0.035,
+    "sectionDip": 0.16
+  },
+  "music": {
+    "comment": "Emoji Elements - Celestial Battle Theme (OFFICIAL INSPIRE soundtrack, fetched at the pinned commit). Beat grid measured: 136.00 BPM, downbeat 1.334 s, bar 1.7647 s. Starting at bar 8 puts the track's break (bar 26) on the last Shells & Feathers bar and its drop (bar 27) on the montage.",
+    "game": "emoji-elements",
+    "bpm": 136,
+    "firstDownbeatSec": 1.334,
+    "startBar": 8,
+    "gain": 0.9,
+    "fadeInSec": 0.35,
+    "fadeOutSec": 3.2
+  },
+  "audio": {
+    "sfxGain": 0.85,
+    "edgeFadeSec": 0.03,
+    "duck": {
+      "threshold": 0.025,
+      "ratio": 5,
+      "attack": 15,
+      "release": 320,
+      "makeup": 1
+    },
+    "loudness": {
+      "I": -14,
+      "TP": -1.5,
+      "LRA": 11
+    }
+  },
+  "intro": {
+    "file": "assets/branding/inspiresoftwareintro.mp4",
+    "comment": "Original studio intro, first, with its own soundtrack; only scaled/resampled to the delivery format."
+  },
+  "titleDefaults": {
+    "showAtBar": 0.15,
+    "holdSec": 2.6
+  },
+  "sections": [
+    {
+      "id": "hardigan",
+      "game": "hardigan-boys",
+      "title": "THE HARDIGAN BOYS",
+      "tagline": "A point-and-click mystery",
+      "accent": "0xF5B800",
+      "clips": [
+        {
+          "shot": "opening-scene",
+          "anchor": "scene: Another Normal Night",
+          "offset": 0.6,
+          "bars": 2,
+          "title": true,
+          "kicker": "OFFICIAL GAMEPLAY SHOWCASE 2026"
+        },
+        {
+          "shot": "living-room-investigation",
+          "anchor": "hotspot television",
+          "offset": 0.9,
+          "bars": 1
+        },
+        {
+          "shot": "the-raid",
+          "anchor": "scene: The Raid",
+          "offset": 1.0,
+          "bars": 2
+        }
+      ]
+    },
+    {
+      "id": "sticks",
+      "game": "sticks-and-bones",
+      "title": "STICKS & BONES",
+      "tagline": "No Rest for Cousin",
+      "accent": "0xF2A33A",
+      "clips": [
+        {
+          "shot": "story-prologue",
+          "anchor": "prologue",
+          "offset": 1.4,
+          "bars": 2,
+          "title": true
+        },
+        {
+          "shot": "quick-play-hand",
+          "anchor": "deal",
+          "offset": 0.3,
+          "bars": 1
+        },
+        {
+          "shot": "quick-play-hand",
+          "anchor": "select tile",
+          "occurrence": 2,
+          "offset": -0.5,
+          "bars": 2
+        }
+      ]
+    },
+    {
+      "id": "card-parlor",
+      "game": "card-parlor",
+      "title": "INSPIRE CARD PARLOR",
+      "tagline": "Classic card games, one strange story",
+      "accent": "0xE0B44C",
+      "clips": [
+        {
+          "shot": "parlor-hub",
+          "anchor": "night",
+          "offset": 0.4,
+          "bars": 1,
+          "title": true
+        },
+        {
+          "shot": "story-chapter-one",
+          "anchor": "challenge scene",
+          "offset": 0.5,
+          "bars": 2
+        },
+        {
+          "shot": "klondike",
+          "anchor": "pick tableau",
+          "offset": -0.4,
+          "bars": 2
+        }
+      ]
+    },
+    {
+      "id": "shells",
+      "game": "shells-and-feathers",
+      "title": "SHELLS & FEATHERS",
+      "tagline": "Peaceful games from the forest",
+      "accent": "0x3FD0B8",
+      "clips": [
+        {
+          "shot": "hub-and-tic-tac-toe",
+          "anchor": "hub",
+          "offset": 0.4,
+          "bars": 1,
+          "title": true
+        },
+        {
+          "shot": "hub-and-tic-tac-toe",
+          "anchor": "match",
+          "offset": 0.2,
+          "bars": 2
+        },
+        {
+          "shot": "acorns-and-leaves",
+          "anchor": "pick",
+          "occurrence": 3,
+          "offset": -0.3,
+          "bars": 1
+        }
+      ]
+    },
+    {
+      "id": "montage",
+      "montage": true,
+      "clips": [
+        {
+          "game": "gridlock",
+          "shot": "capture-and-build",
+          "anchor": "road",
+          "offset": -0.2,
+          "bars": 1,
+          "label": "GRIDLOCK",
+          "accent": "0xE2553A",
+          "occurrence": 1
+        },
+        {
+          "game": "emoji-elements",
+          "shot": "battle-combat",
+          "anchor": "CONFIRM attack",
+          "offset": -0.3,
+          "bars": 1,
+          "label": "EMOJI ELEMENTS",
+          "accent": "0xB98CFF"
+        },
+        {
+          "game": "gridlock",
+          "shot": "opening-moves",
+          "anchor": "road",
+          "occurrence": 2,
+          "offset": -0.6,
+          "bars": 1,
+          "label": "GRIDLOCK",
+          "accent": "0xE2553A"
+        },
+        {
+          "game": "emoji-elements",
+          "shot": "pack-opening",
+          "anchor": "OPEN PACK",
+          "offset": 0.2,
+          "bars": 1,
+          "label": "EMOJI ELEMENTS",
+          "accent": "0xB98CFF"
+        },
+        {
+          "game": "gridlock",
+          "shot": "capture-and-build",
+          "anchor": "build",
+          "occurrence": 2,
+          "offset": 0.1,
+          "bars": 1,
+          "label": "GRIDLOCK",
+          "accent": "0xE2553A"
+        },
+        {
+          "game": "emoji-elements",
+          "shot": "battle-combat",
+          "anchor": "cast card",
+          "occurrence": 2,
+          "offset": -0.4,
+          "bars": 1,
+          "label": "EMOJI ELEMENTS",
+          "accent": "0xB98CFF"
+        }
+      ]
+    }
+  ],
+  "endCard": {
+    "bars": 4,
+    "lines": [
+      "ENTER THE INSPIREVERSE",
+      "PLAY FREE",
+      "WWW.INSPIRECLOTHING.ART"
+    ],
+    "background": {
+      "game": "emoji-elements",
+      "shot": "battle-combat",
+      "anchor": "cast card",
+      "occurrence": 3,
+      "offset": 0
+    }
+  },
+  "framing": {
+    "comment": "Per game and aspect: 'full' = the capture already matches the frame; 'fit' = whole frame scaled into the canvas over a blurred, darkened fill (nothing cropped); 'crop' = a verified region [x,y,w,h] of the source that holds the action. 9:16 uses the game's own portrait capture wherever the game supports portrait.",
+    "16x9": {
+      "default": {
+        "source": "landscape",
+        "mode": "full"
+      }
+    },
+    "9x16": {
+      "default": {
+        "source": "portrait",
+        "mode": "full"
+      },
+      "hardigan-boys": {
+        "source": "landscape",
+        "mode": "fit",
+        "zoom": 1.0
+      }
+    },
+    "1x1": {
+      "default": {
+        "source": "landscape",
+        "mode": "fit",
+        "zoom": 1.0
+      },
+      "gridlock": {
+        "source": "landscape",
+        "mode": "crop",
+        "rect": [
+          420,
+          0,
+          1080,
+          1080
+        ],
+        "verified": "landscape board spans x 525-1400, y 100-975; the side player cards are partly trimmed"
+      },
+      "card-parlor/klondike": {
+        "source": "portrait",
+        "mode": "crop",
+        "rect": [
+          0,
+          0,
+          1080,
+          1080
+        ],
+        "verified": "portrait header, foundations and full tableau sit in y 0-1080"
+      },
+      "shells-and-feathers": {
+        "source": "portrait",
+        "mode": "crop",
+        "rect": [
+          0,
+          420,
+          1080,
+          1080
+        ],
+        "verified": "portrait board + side panel sit in y 580-1340"
+      },
+      "sticks-and-bones/story-prologue": {
+        "source": "landscape",
+        "mode": "crop",
+        "rect": [
+          420,
+          0,
+          1080,
+          1080
+        ],
+        "verified": "narration box x 485-1245 and top buttons x 1012-1436 fall inside"
+      }
+    }
+  },
+  "highlights": {
+    "durationSec": 15,
+    "formats": [
+      "16x9",
+      "9x16"
+    ],
+    "audio": "game",
+    "comment": "Per-game 15 s highlights with the game's own recorded sound (its music and effects, full takes).",
+    "games": {
+      "hardigan-boys": [
+        {
+          "shot": "opening-scene",
+          "anchor": "scene: Another Normal Night",
+          "offset": 0.6,
+          "sec": 5
+        },
+        {
+          "shot": "living-room-investigation",
+          "anchor": "hotspot television",
+          "offset": 0.6,
+          "sec": 4
+        },
+        {
+          "shot": "the-raid",
+          "anchor": "scene: The Raid",
+          "offset": 0.8,
+          "sec": 6
+        }
+      ],
+      "sticks-and-bones": [
+        {
+          "shot": "story-prologue",
+          "anchor": "prologue",
+          "offset": 1.2,
+          "sec": 5
+        },
+        {
+          "shot": "quick-play-hand",
+          "anchor": "deal",
+          "offset": 0.2,
+          "sec": 10
+        }
+      ],
+      "card-parlor": [
+        {
+          "shot": "parlor-hub",
+          "anchor": "night",
+          "offset": 0.2,
+          "sec": 3.5
+        },
+        {
+          "shot": "story-chapter-one",
+          "anchor": "challenge scene",
+          "offset": 0.4,
+          "sec": 4.5
+        },
+        {
+          "shot": "klondike",
+          "anchor": "pick tableau",
+          "offset": -0.5,
+          "sec": 7
+        }
+      ],
+      "shells-and-feathers": [
+        {
+          "shot": "hub-and-tic-tac-toe",
+          "anchor": "hub",
+          "offset": 0.3,
+          "sec": 3
+        },
+        {
+          "shot": "hub-and-tic-tac-toe",
+          "anchor": "match",
+          "offset": 0.1,
+          "sec": 7
+        },
+        {
+          "shot": "acorns-and-leaves",
+          "anchor": "pick",
+          "offset": -0.2,
+          "sec": 5
+        }
+      ],
+      "gridlock": [
+        {
+          "shot": "opening-moves",
+          "anchor": "board",
+          "offset": 0.5,
+          "sec": 8
+        },
+        {
+          "shot": "capture-and-build",
+          "anchor": "build",
+          "offset": 0.15,
+          "sec": 7
+        }
+      ],
+      "emoji-elements": [
+        {
+          "shot": "pack-opening",
+          "anchor": "OPEN PACK",
+          "offset": 0,
+          "sec": 5
+        },
+        {
+          "shot": "battle-combat",
+          "anchor": "CONFIRM attack",
+          "offset": -1.5,
+          "sec": 10
+        }
+      ]
+    }
+  }
+}

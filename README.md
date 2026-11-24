@@ -49,6 +49,7 @@ npm run produce
 | `npm run fetch` | Downloads studio branding and per-game title cards and music from the **pinned commits** and checks each SHA-256 | `assets/branding/`, `assets/vendor/<game>/`, `assets/vendor/manifest.json` |
 | `npm run validate` | Checks that the intro is bit-identical to the original (hash, size, streams, duration, full decode) and checks the logo and every fetched asset | console |
 | `npm run capture:all` | Plays every live game through its adapter and records 1080p60 picture and game audio, shot by shot, in landscape and portrait where the game supports it | `capture/<game>/<layout>/<shot>.mkv`, screenshots, `capture/<game>/manifest.json`, `capture/summary.json` |
+| `npm run capture:sfx` | SFX-only takes of the same shots (each game's music blocked) for trailers with their own music bed | `capture/<game>/<layout>/sfx/<shot>.mkv` |
 | `npm run capture:<game>` | The same for one game: `hardigan-boys`, `sticks-and-bones`, `card-parlor`, `shells-and-feathers`, `gridlock` or `emoji-elements` | |
 | `npm run build` | Builds uniform H.264/AAC segments: the intro, one per game (cut from the shot named in `games.json` `segment`, with lower third, watermark and game audio) and the end card | `footage/NN-*.mp4` |
 | `npm run render` | Joins the segments with stream copy, then checks duration and decodes the whole file | `renders/inspire-showreel.mp4` and `.json` report |
@@ -86,6 +87,45 @@ The page's own render rate is also sampled with `requestAnimationFrame`. A faile
 **Analytics exclusion.** Before any page script runs, `navigator.doNotTrack`, `globalPrivacyControl` and `window.doNotTrack` are set; every game checks at least one of these. Requests to PostHog and other analytics hosts are also blocked, and Hardigan gets its own `?analytics=off`. Blocked request counts are recorded per shot.
 
 **Writing adapters.** See [AGENTS.md](AGENTS.md#adapter-contract). `npm run capture:explore -- <game> [--layout=portrait] [--steps=file.js]` boots a game in the capture environment and prints its visible controls with screenshots.
+
+## Trailer and highlights: ENTER THE INSPIREVERSE
+
+`config/trailers/inspireverse.json` is the edit decision list for *ENTER THE INSPIREVERSE — Official Gameplay Showcase 2026*. The edit uses only genuine captures and the studio's own media. Its sequence is:
+
+1. the original `inspiresoftwareintro.mp4`
+2. The Hardigan Boys
+3. STICKS & BONES
+4. INSPIRE Card Parlor
+5. Shells & Feathers
+6. a GRIDLOCK + Emoji Elements montage
+7. the INSPIRE end card (`ENTER THE INSPIREVERSE / PLAY FREE / WWW.INSPIRECLOTHING.ART`)
+
+| Command | Output |
+|---------|--------|
+| `npm run render:all` | All three trailer formats, all highlights, then validation |
+| `npm run render:trailer` | `renders/trailer/enter-the-inspireverse-2026-{16x9,9x16,1x1}.mp4` |
+| `npm run render:trailer:16x9` (or `:9x16`, `:1x1`) | One format |
+| `npm run render:highlights` | `renders/highlights/<game>-{16x9,9x16}.mp4`, 15 s each |
+| `npm run render:highlight:<game>` | One game's highlights |
+| `npm run validate:renders` | Checks every MP4, writes `renders/validation.json` and a `.contact.jpg` sheet per file |
+
+### How the edit is built (`scripts/edit/`)
+
+- **Clips are anchored to capture events, not timestamps.** A clip names a shot, an `anchor` event from that shot's manifest (such as `"scene: The Raid"` or `"place tile"`), an occurrence and an offset. Re-capturing a game therefore keeps the edit intact, and a missing anchor fails with the list of labels the take does have.
+- **Cuts are locked to the music.** The bed is the OFFICIAL INSPIRE *Emoji Elements — Celestial Battle Theme*, measured at 136.00 BPM (bar = 1.7647 s). Every clip is a whole number of bars, and its frame boundaries are rounded from the bar grid, so there is no drift. The music starts on bar 8. That places the track's breakdown on the last Shells & Feathers bar and its drop on the montage.
+- **Each aspect ratio is its own composition**, set per game or per shot in `framing`:
+  - `full`: the capture already matches the canvas.
+  - `fit`: the whole capture over a blurred, darkened fill, so nothing is cut off. Titles move into the fill.
+  - `crop`: a source rectangle checked by eye to contain the action (each has a `verified` note).
+  - 9:16 uses the game's own portrait capture wherever the game supports portrait. The Hardigan Boys has no portrait layout, so it is fitted.
+- **Graphics.** Animated titles in Inter Display Black Italic, close to the INSPIRE wordmark, slide in with an eased fade, an accent-colour bar and a tagline. Montage cuts carry a small game label. Every clip gets a subtle push-in and vignette. Sections are joined with short dips, and the montage starts on a white flash at the drop. The end card shows the INSPIRE logo scaling in over blurred gameplay, with the three lines arriving on the beat.
+- **Audio.** Trailer clips come from **SFX-only takes**: `npm run capture:sfx` records the same shots with each game's music files blocked (and Card Parlor's music muted through its own setting), so the trailer's single music bed never clashes with in-game music. In the mix:
+  1. Each clip's SFX gets 30 ms edge fades, so cuts never click.
+  2. The bed is ducked under the SFX by a sidechain compressor.
+  3. The original intro keeps its own soundtrack.
+  4. The whole mix is two-pass loudness-normalised (linear) to −14 LUFS, then limited at −1.7 dBFS.
+  Highlights instead use the game's own full sound (its music and effects).
+- **Delivery.** H.264 High, yuv420p, 60 fps, CRF 17, AAC 320 kb/s at 48 kHz, `+faststart`.
 
 ## Configuration
 

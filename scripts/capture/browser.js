@@ -39,9 +39,17 @@ async function launch({ display, audio, width, height, extraArgs = [] }) {
 }
 
 /** New isolated context + page, fullscreen, analytics blocked. */
-async function openPage(browser, { width, height, touch = false, stats }) {
+async function openPage(browser, { width, height, touch = false, stats, blockMedia = null, storage = null }) {
   const ctx = await browser.newContext({ viewport: null, hasTouch: touch, locale: 'en-US', timezoneId: 'America/New_York', serviceWorkers: 'block' });
   await ctx.addInitScript(INIT_SCRIPT);
+  // SFX-only takes: seed the game's own audio settings and refuse its music files.
+  if (storage) await ctx.addInitScript((entries) => { for (const [k, v] of Object.entries(entries)) { try { localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); } catch {} } }, storage);
+  if (blockMedia) {
+    await ctx.route((url) => blockMedia.test(url.pathname), (route) => {
+      stats.musicBlocked = (stats.musicBlocked || 0) + 1;
+      return route.abort('blockedbyclient');
+    });
+  }
   await ctx.route((url) => ANALYTICS_HOSTS.test(url.hostname), (route) => {
     stats.analyticsBlocked = (stats.analyticsBlocked || 0) + 1;
     stats.analyticsHosts = [...new Set([...(stats.analyticsHosts || []), new URL(route.request().url()).hostname])];

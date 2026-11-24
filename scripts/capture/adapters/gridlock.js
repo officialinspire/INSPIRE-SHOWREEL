@@ -111,6 +111,8 @@ async function startSoloGame(api) {
 }
 
 module.exports = {
+  // SFX-only takes: assets/media/*.mp3 are the two music tracks; effects are synthesised.
+  sfxOnly: { block: /\/assets\/media\/[^/]+\.mp3$/i },
   layouts: ['landscape', 'portrait'],
   url: (game) => withParams(game.url, { debug: '1' }),
   async boot(api) {

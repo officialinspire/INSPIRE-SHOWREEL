@@ -6,6 +6,8 @@
 //   --shot=menu,board                specific shots
 //   --retries=N                      extra attempts per failing shot (default from trailer.json)
 //   --no-audio                       record picture only
+//   --variant=sfx                    SFX-only takes: the game's music is blocked (adapter.sfxOnly)
+//                                    so trailers can lay their own music bed under real gameplay SFX
 // Output: capture/<id>/<layout>/<shot>.mkv (+ screenshots), capture/<id>/manifest.json,
 //         capture/summary.json
 const fs = require('fs');
@@ -27,6 +29,7 @@ main(async () => {
     layouts: typeof a.layout === 'string' ? a.layout.split(',') : [],
     shots: typeof a.shot === 'string' ? a.shot.split(',') : [],
     retries: a.retries !== undefined ? Number(a.retries) : cfg.trailer.capture.retries,
+    variant: a.variant === 'sfx' ? 'sfx' : 'full',
   };
   const audio = a['no-audio'] ? null : await startAudio();
   const summaryFile = path.join(cfg.paths.capture, 'summary.json');
@@ -39,6 +42,12 @@ main(async () => {
       log.step(`${game.title} (${adapter.layouts.join(' + ')})`);
       const m = await captureGame({ cfg, game, adapter, audio, opts });
       summary[game.id] = { updatedAt: m.updatedAt, ...m.summary };
+      if (opts.variant === 'sfx') {
+        for (const t of m.sfxTakes.filter((x) => !opts.layouts.length || opts.layouts.includes(x.layout))) {
+          if (t.status === 'fail') incomplete.push(`${game.id}/${t.layout}/sfx/${t.id}`);
+        }
+        continue;
+      }
       for (const [layout, s] of Object.entries(m.summary)) {
         const msg = `${game.id} ${layout}: ${s.passed}/${s.shots} shots ok, ${s.usableSec}s usable (target ${s.target.min}–${s.target.max}s)`;
         if (s.complete) log.ok(msg); else { log.warn(`${msg} — INCOMPLETE`); incomplete.push(`${game.id}/${layout}`); }
