@@ -31,10 +31,11 @@ test('three independent compositions and highlight formats', () => {
 
 const cfg = config.load();
 const haveCaptures = ['hardigan-boys', 'emoji-elements'].every((g) => fs.existsSync(path.join(cfg.paths.capture, g, 'manifest.json')));
-test('every clip anchor resolves against the capture manifests (full takes)', { skip: !haveCaptures && 'no captures on this machine' }, () => {
-  for (const format of Object.keys(edl.formats)) {
-    const tl = trailerTimeline(cfg, edl, format, { variant: 'full' });
+test('every clip anchor resolves against the capture manifests (full and SFX takes, every format)', { skip: !haveCaptures && 'no captures on this machine' }, () => {
+  const sfx = fs.existsSync(path.join(cfg.paths.capture, 'emoji-elements', 'landscape', 'sfx'));
+  for (const format of Object.keys(edl.formats)) for (const variant of sfx ? ['full', 'sfx'] : ['full']) {
+    const tl = trailerTimeline(cfg, edl, format, { variant });
     const frames = tl.clips.reduce((t, c) => t + c.frames, 0);
-    assert.strictEqual(frames, Math.round(tl.totalBars * bar * edl.fps), `${format}: frame total must match the bar grid (no drift)`);
+    assert.strictEqual(frames, Math.round(tl.totalBars * bar * edl.fps), `${format}/${variant}: frame total must match the bar grid (no drift)`);
   }
 });

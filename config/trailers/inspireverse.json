@@ -249,9 +249,9 @@
         {
           "game": "emoji-elements",
           "shot": "battle-combat",
-          "anchor": "cast card",
+          "anchor": "CONFIRM attack",
           "occurrence": 2,
-          "offset": -0.4,
+          "offset": 0.4,
           "bars": 1,
           "label": "EMOJI ELEMENTS",
           "accent": "0xB98CFF"
@@ -269,9 +269,8 @@
     "background": {
       "game": "emoji-elements",
       "shot": "battle-combat",
-      "anchor": "cast card",
-      "occurrence": 3,
-      "offset": 0
+      "anchor": "combat",
+      "offset": 2.0
     }
   },
   "framing": {
