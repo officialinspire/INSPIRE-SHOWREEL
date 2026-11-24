@@ -68,6 +68,10 @@ main(async () => {
   if (cfg) {
     const lt = cfg.trailer.segments.lowerThird;
     if (lt.enabled) need(fs.existsSync(lt.fontFile), `lower-third font ${lt.fontFile}`, 'set segments.lowerThird.fontFile in config/trailer.json (e.g. apt-get install fonts-dejavu-core)');
+    try {
+      const edl = JSON.parse(fs.readFileSync(require('path').join(cfg.paths.root, 'config', 'trailers', 'inspireverse.json'), 'utf8'));
+      for (const f of [edl.brand.font, edl.brand.fontSub]) need(fs.existsSync(f), `trailer font ${f}`, 'apt-get install fonts-inter');
+    } catch (e) { need(false, 'trailer EDL readable', e.message); }
     need(fs.existsSync(cfg.paths.intro), `studio intro ${cfg.games.studio.intro.file}`, 'run npm run fetch');
     need(fs.existsSync(cfg.paths.logo), `studio logo ${cfg.games.studio.logo.file}`, 'run npm run fetch');
     for (const [k, p] of Object.entries(cfg.paths)) {

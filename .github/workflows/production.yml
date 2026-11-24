@@ -1,0 +1,119 @@
+# Manually triggered production run: capture -> render -> validate -> package -> (optional) release.
+#
+# Resource requirements (measured on the reference run, 2026-11-24, 4 vCPU / 16 GB / no GPU):
+#   - Runner: ubuntu-24.04 GitHub-hosted (4 vCPU, 16 GB RAM). No GPU needed or used.
+#   - Wall time, mode=full: about 2 h (capture:all ~40 min, capture:sfx ~30 min, renders + validation
+#     ~40 min, setup ~5 min). timeout-minutes is 240 for headroom.
+#   - Disk: about 5.5 GB peak (raw captures 3.4 GB, intermediates 1.5 GB, deliverables 0.25 GB).
+#   - Network: the six live GitHub Pages games, raw.githubusercontent.com (pinned asset commits),
+#     npm, Playwright's Chromium download, Ubuntu apt mirrors.
+# Generated media never enters Git history: deliverables go to the workflow artifact and, when
+# publish_release is true, to a GitHub release.
+name: Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "check = environment + tests + asset validation (~5 min); full = capture, render, validate, package (~2 h)"
+        type: choice
+        options: [check, full]
+        default: check
+      publish_release:
+        description: "Create/update the GitHub release from the validated package (mode=full only)"
+        type: boolean
+        default: false
+      release_tag:
+        description: "Release tag"
+        type: string
+        default: showreel-2026-v1.0.0
+      upload_raw_captures:
+        description: "Also upload raw captures (~3.4 GB) as an artifact"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  produce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    permissions:
+      contents: write # only used by the release step
+    env:
+      FORCE_COLOR: "0"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Node (pinned in .nvmrc)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: System packages (Ubuntu 24.04 archive versions)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ffmpeg xvfb pulseaudio pulseaudio-utils fonts-inter fonts-dejavu-core
+          dpkg-query -W -f='${Package} ${Version}\n' ffmpeg xvfb pulseaudio fonts-inter fonts-dejavu-core | tee system-packages.txt
+
+      - name: npm ci (lockfile-pinned; playwright 1.63.0)
+        run: npm ci
+
+      - name: Chromium for Playwright (revision pinned by the playwright version)
+        run: npx playwright install --with-deps chromium
+
+      - name: Dependency check and tests
+        run: |
+          npm run check
+          npm test
+
+      - name: Verify live games and studio assets
+        run: |
+          npm run verify:urls
+          npm run fetch
+          npm run validate
+
+      - name: Full production (capture, SFX takes, render, thumbnails, validate, package)
+        if: inputs.mode == 'full'
+        run: npm run produce:all -- --tag=${{ inputs.release_tag }}
+
+      - name: Upload deliverables
+        if: always() && inputs.mode == 'full'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: inspire-showreel-${{ inputs.release_tag }}
+          path: |
+            release/
+            renders/validation.json
+            renders/**/*.json
+            renders/**/*.contact.jpg
+            capture/*/manifest.json
+            capture/summary.json
+            system-packages.txt
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Upload raw captures
+        if: inputs.mode == 'full' && inputs.upload_raw_captures
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: inspire-showreel-raw-captures
+          path: capture/
+          retention-days: 7
+          compression-level: 0
+
+      - name: Publish and verify GitHub release
+        if: inputs.mode == 'full' && inputs.publish_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          npm run release:github -- ${{ inputs.release_tag }}
+          npm run verify:release -- ${{ inputs.release_tag }}

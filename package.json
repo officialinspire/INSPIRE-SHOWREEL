@@ -26,7 +26,7 @@
     "capture:report": "node scripts/capture-report.js",
     "build": "node scripts/build-segments.js",
     "render": "node scripts/render.js",
-    "render:all": "npm run render:trailer && npm run render:highlights && npm run validate:renders",
+    "render:all": "npm run render:trailer && npm run render:highlights && npm run render:thumbnails && npm run validate:renders",
     "render:trailer": "node scripts/render-trailer.js",
     "render:trailer:16x9": "node scripts/render-trailer.js --format=16x9",
     "render:trailer:9x16": "node scripts/render-trailer.js --format=9x16",
@@ -39,10 +39,13 @@
     "render:highlight:gridlock": "node scripts/render-highlights.js --only=gridlock",
     "render:highlight:emoji-elements": "node scripts/render-highlights.js --only=emoji-elements",
     "validate:renders": "node scripts/validate-renders.js",
-    "produce": "npm run check && npm run verify:urls && npm run fetch && npm run validate && npm run capture:all && npm run build && npm run render",
-    "release": "bash scripts/publish-release.sh",
     "clean": "node scripts/clean.js",
-    "test": "node --test \"tests/**/*.test.js\""
+    "test": "node --test \"tests/**/*.test.js\"",
+    "render:thumbnails": "node scripts/render-thumbnails.js",
+    "package:release": "node scripts/package-release.js",
+    "release:github": "node scripts/github-release.js",
+    "verify:release": "node scripts/verify-release.js",
+    "produce:all": "npm run check && npm test && npm run verify:urls && npm run fetch && npm run validate && npm run capture:all && npm run capture:sfx && npm run render:all && npm run package:release --"
   },
   "dependencies": {
     "playwright": "1.63.0"
