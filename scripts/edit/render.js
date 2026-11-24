@@ -13,9 +13,15 @@ const G = require('./graphics');
 
 const A_FMT = 'aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo';
 
+// Screen captures are RGB converted with the BT.601 matrix (FFmpeg's default) and untagged;
+// HD players assume BT.709. Convert the matrix only (sRGB primaries = BT.709) and tag everything.
+const TO_709 = 'colorspace=space=bt709:trc=bt709:primaries=bt709:range=tv:ispace=smpte170m:itrc=bt709:iprimaries=bt709:irange=tv';
+const OVERLAY_709 = 'scale=out_color_matrix=bt709:out_range=tv,format=yuva420p';
+const TAGS = ['-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv'];
+
 function interArgs(edl) {
   const i = edl.intermediate;
-  return ['-c:v', 'libx264', '-preset', i.preset, '-crf', String(i.crf), '-pix_fmt', 'yuv420p', '-r', String(edl.fps), '-g', String(edl.fps), '-c:a', 'pcm_s16le', '-ar', '48000', '-ac', '2'];
+  return [...TAGS, '-c:v', 'libx264', '-preset', i.preset, '-crf', String(i.crf), '-pix_fmt', 'yuv420p', '-r', String(edl.fps), '-g', String(edl.fps), '-c:a', 'pcm_s16le', '-ar', '48000', '-ac', '2'];
 }
 
 /** Render one timeline item to an intermediate .mkv. */
@@ -25,7 +31,8 @@ async function renderItem(cfg, edl, fmt, item, out, { fadeIn = 0, fadeOut = 0, f
   const brand = { ...edl.brand, logo: path.join(cfg.paths.root, edl.brand.logo) };
   const L = new G.Layer(work, path.basename(out, '.mkv'));
   const parts = [];
-  const rf = reframe('[0:v]', fmt, endcard ? { ...item.framing, mode: item.framing.mode === 'full' ? 'full' : item.framing.mode } : item.framing, 'c');
+  parts.push(`[0:v]${TO_709}[c_src]`);
+  const rf = reframe('[c_src]', fmt, endcard ? { ...item.framing, mode: item.framing.mode === 'full' ? 'full' : item.framing.mode } : item.framing, 'c');
   parts.push(rf.graph);
   let v = rf.out;
   if (endcard) {
@@ -44,8 +51,8 @@ async function renderItem(cfg, edl, fmt, item, out, { fadeIn = 0, fadeOut = 0, f
   let k = 0;
   const lab = () => `g${k++}`;
   for (const g of gfx) {
-    for (const o of g.overlays) { const n = lab(); parts.push(`${v}[${o.input + 1}:v]overlay=x='${o.x}':y='${o.y}':eval=frame:shortest=0:eof_action=pass[${n}]`); v = `[${n}]`; }
-    if (g.logo) { const n = lab(); parts.push(`[${g.logo.input + 1}:v]${g.logo.chain}[lg${n}]`, `${v}[lg${n}]overlay=x='${g.logo.x}':y='${g.logo.y}':eval=frame:eof_action=pass[${n}]`); v = `[${n}]`; }
+    for (const o of g.overlays) { const n = lab(); parts.push(`[${o.input + 1}:v]${OVERLAY_709}[ov${n}]`, `${v}[ov${n}]overlay=x='${o.x}':y='${o.y}':eval=frame:shortest=0:eof_action=pass[${n}]`); v = `[${n}]`; }
+    if (g.logo) { const n = lab(); parts.push(`[${g.logo.input + 1}:v]${g.logo.chain},${OVERLAY_709}[lg${n}]`, `${v}[lg${n}]overlay=x='${g.logo.x}':y='${g.logo.y}':eval=frame:eof_action=pass[${n}]`); v = `[${n}]`; }
     if (g.filters.length) { const n = lab(); parts.push(`${v}${g.filters.join(',')}[${n}]`); v = `[${n}]`; }
   }
   const e = edl.audio?.edgeFadeSec ?? 0.03;
@@ -103,7 +110,7 @@ async function mixAudio(edl, programme, out, { music, totalSec }) {
 async function deliver(edl, video, audio, out) {
   const e = edl.encode;
   await run('ffmpeg', ['-y', '-hide_banner', '-nostdin', '-i', video, '-i', audio, '-map', '0:v:0', '-map', '1:a:0',
-    '-c:v', e.codec, '-preset', e.preset, '-crf', String(e.crf), '-profile:v', e.profile, '-pix_fmt', e.pixFmt, '-r', String(edl.fps), '-g', String(edl.fps * 2),
+    ...TAGS, '-c:v', e.codec, '-preset', e.preset, '-crf', String(e.crf), '-profile:v', e.profile, '-level:v', e.level || '4.2', '-pix_fmt', e.pixFmt, '-r', String(edl.fps), '-g', String(edl.fps * 2),
     '-c:a', 'aac', '-b:a', e.audioBitrate, '-ar', String(e.sampleRate), '-ac', '2', '-movflags', '+faststart', '-shortest', out]);
 }
 

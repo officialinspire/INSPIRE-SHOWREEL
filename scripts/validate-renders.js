@@ -42,6 +42,17 @@ async function check(cfg, file, spec, targets) {
   want(v?.width === spec.width && v?.height === spec.height, `size ${v?.width}x${v?.height} (want ${spec.width}x${spec.height})`);
   want(v?.r_frame_rate === `${spec.fps}/1`, `fps ${v?.r_frame_rate}`);
   want(a?.codec_name === 'aac' && Number(a.sample_rate) === 48000 && a.channels === 2, `audio ${a?.codec_name} ${a?.sample_rate} ${a?.channels}ch`);
+  want(Number(v?.level) <= 42, `H.264 level ${v?.level / 10} (max 4.2 for broad 1080p60 playback)`);
+  want(v?.color_space === 'bt709' && v?.color_primaries === 'bt709' && v?.color_transfer === 'bt709' && v?.color_range === 'tv', `colour tags ${v?.color_space}/${v?.color_primaries}/${v?.color_transfer}/${v?.color_range}`);
+  const avDiff = Math.abs(Number(v?.duration) - Number(a?.duration));
+  want(avDiff < 0.05, `audio/video length differ by ${avDiff.toFixed(3)}s`);
+  want(Number(v?.start_time) === 0 && Number(a?.start_time) === 0, `stream start times v=${v?.start_time} a=${a?.start_time}`);
+  // Frame timing: every frame interval must be exactly 1/fps (no dropped or doubled timestamps).
+  const { out: pts } = await run('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'packet=pts_time', '-of', 'csv=p=0', file]);
+  const ts = pts.trim().split('\n').map(Number).sort((x, y) => x - y);
+  const step = 1 / spec.fps;
+  const irregular = ts.slice(1).filter((t, i) => Math.abs(t - ts[i] - step) > step * 0.25).length;
+  want(irregular === 0, `${irregular} irregular frame intervals`);
   const atoms = atomOrder(file);
   const faststart = atoms.indexOf('moov') > -1 && atoms.indexOf('moov') < atoms.indexOf('mdat');
   want(faststart, `atoms ${atoms.join(',')} (moov must precede mdat)`);
@@ -64,7 +75,7 @@ async function check(cfg, file, spec, targets) {
   const rows = Math.ceil(12 / cols);
   const tw = spec.width > spec.height ? 480 : spec.width === spec.height ? 360 : 240;
   await run('ffmpeg', ['-y', '-hide_banner', '-nostdin', '-i', file, '-vf', `fps=${(12 / dur).toFixed(4)},scale=${tw}:-2,tile=${cols}x${rows}:padding=4:color=black`, '-frames:v', '1', '-q:v', '3', sheet]);
-  return { file: path.relative(cfg.paths.root, file), ok: fails.length === 0, fails, durationSec: +dur.toFixed(3), loudnessLUFS: I, truePeakDb: TP, blackSec, blacks, faststart, contactSheet: path.relative(cfg.paths.root, sheet), bytes: Number(j.format.size), bitrateKbps: Math.round(Number(j.format.bit_rate) / 1000) };
+  return { file: path.relative(cfg.paths.root, file), ok: fails.length === 0, fails, level: Number(v?.level) / 10, color: v?.color_space, frames: ts.length, avDiffSec: +avDiff.toFixed(3), durationSec: +dur.toFixed(3), loudnessLUFS: I, truePeakDb: TP, blackSec, blacks, faststart, contactSheet: path.relative(cfg.paths.root, sheet), bytes: Number(j.format.size), bitrateKbps: Math.round(Number(j.format.bit_rate) / 1000) };
 }
 
 main(async () => {

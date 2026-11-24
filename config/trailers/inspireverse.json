@@ -8,15 +8,36 @@
   "formats": {
     "16x9": {
       "width": 1920,
-      "height": 1080
+      "height": 1080,
+      "safe": {
+        "top": 0.05,
+        "bottom": 0.08,
+        "left": 0.05,
+        "right": 0.05,
+        "note": "YouTube/TV: title-safe ~5%, progress bar at the bottom"
+      }
     },
     "9x16": {
       "width": 1080,
-      "height": 1920
+      "height": 1920,
+      "safe": {
+        "top": 0.14,
+        "bottom": 0.22,
+        "left": 0.06,
+        "right": 0.16,
+        "note": "Reels/TikTok/Shorts: account header at top, caption + buttons at the bottom, action icons on the right"
+      }
     },
     "1x1": {
       "width": 1080,
-      "height": 1080
+      "height": 1080,
+      "safe": {
+        "top": 0.06,
+        "bottom": 0.1,
+        "left": 0.06,
+        "right": 0.06,
+        "note": "Instagram/X feed"
+      }
     }
   },
   "encode": {
@@ -26,7 +47,14 @@
     "profile": "high",
     "pixFmt": "yuv420p",
     "audioBitrate": "320k",
-    "sampleRate": 48000
+    "sampleRate": 48000,
+    "level": "4.2",
+    "color": {
+      "space": "bt709",
+      "primaries": "bt709",
+      "trc": "bt709",
+      "range": "tv"
+    }
   },
   "intermediate": {
     "preset": "veryfast",
@@ -455,6 +483,117 @@
           "sec": 10
         }
       ]
+    }
+  },
+  "thumbnails": {
+    "comment": "Frames are genuine captures (full takes). tile = 16:9 crop for the landscape collage (3 tiles / brand band / 3 tiles); band = 4:1 crop for the portrait collage (3 strips / brand block / 3 strips); source pixels of the 1920x1080 landscape take.",
+    "games": {
+      "hardigan-boys": {
+        "shot": "the-raid",
+        "anchor": "scene: The Raid",
+        "offset": 0.7,
+        "tile": [
+          96,
+          120,
+          1728,
+          972
+        ],
+        "band": [
+          0,
+          330,
+          1920,
+          480
+        ]
+      },
+      "sticks-and-bones": {
+        "shot": "quick-play-hand",
+        "anchor": "place tile",
+        "occurrence": 5,
+        "offset": 0.8,
+        "tile": [
+          600,
+          0,
+          1280,
+          720
+        ],
+        "band": [
+          600,
+          10,
+          1320,
+          330
+        ]
+      },
+      "card-parlor": {
+        "shot": "klondike",
+        "anchor": "place tableau",
+        "occurrence": 2,
+        "offset": 0.6,
+        "tile": [
+          360,
+          0,
+          1520,
+          855
+        ],
+        "band": [
+          200,
+          140,
+          1720,
+          430
+        ]
+      },
+      "shells-and-feathers": {
+        "shot": "acorns-and-leaves",
+        "anchor": "move to",
+        "occurrence": 8,
+        "offset": 0.6,
+        "tile": [
+          200,
+          60,
+          1560,
+          878
+        ],
+        "band": [
+          200,
+          320,
+          1720,
+          430
+        ]
+      },
+      "gridlock": {
+        "shot": "capture-and-build",
+        "anchor": "build",
+        "occurrence": 2,
+        "offset": 1.3,
+        "tile": [
+          300,
+          20,
+          1600,
+          900
+        ],
+        "band": [
+          300,
+          300,
+          1640,
+          410
+        ]
+      },
+      "emoji-elements": {
+        "shot": "pack-opening",
+        "anchor": "pack reveal",
+        "offset": 2.4,
+        "tile": [
+          400,
+          190,
+          1120,
+          630
+        ],
+        "band": [
+          300,
+          340,
+          1320,
+          330
+        ]
+      }
     }
   }
 }

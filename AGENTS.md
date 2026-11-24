@@ -6,7 +6,7 @@ Instructions for AI agents and contributors working in this repository.
 
 1. **Never modify the game repositories.** Treat the officialinspire game repos and their live GitHub Pages sites as read-only sources. Do not open PRs, push or file changes against them from this project. If a game needs a fix, write it up in `docs/PRODUCTION_STATUS.md` under *Blockers / findings* instead.
 2. **Never alter the studio originals.** `assets/branding/inspiresoftwareintro.mp4` and `assets/branding/inspire-logo.png` must stay byte-identical to the SHA-256 recorded in `config/games.json`. `npm test` and `npm run validate` enforce this. Make derived versions in `footage/` only.
-3. **Never commit generated media.** `capture/`, `footage/`, `renders/` and `assets/vendor/` are git-ignored. Publish finished renders with `npm run release`. Large source masters go in `assets/masters/` (Git LFS).
+3. **Never commit generated media.** `capture/`, `footage/`, `renders/`, `release/` and `assets/vendor/` are git-ignored. Publish finished renders with `npm run package:release` and then `npm run release:github` (or the Production workflow). Never attach unvalidated files. Large source masters go in `assets/masters/` (Git LFS).
 4. **Pin sources.** Every asset reference uses a full 40-character commit SHA plus a SHA-256. When a game updates, bump `commit`, re-hash its assets, re-run `npm run verify:urls && npm run fetch && npm run validate`, re-run that game's capture, and update the tables in `docs/PRODUCTION_STATUS.md`.
 5. **Record only verified facts.** A URL, control, selector or startup step goes in the docs only after you have observed it in a run, such as a capture manifest, its screenshots, or `scripts/capture/explore.js` output.
 6. **Never fabricate or misreport footage.** A game or layout counts as captured only when `capture/<id>/manifest.json` shows `summary.<layout>.complete: true`. A failed or warned shot is reported as such, with its reason.
@@ -34,11 +34,16 @@ scripts/edit/            editing engine
   frame.js               per-aspect reframing (full / fit over blurred fill / verified crop), push-in
   graphics.js            animated titles, montage labels, end card, highlight brand tag
   render.js              clip intermediates, concat, ducked music mix, loudnorm, delivery encode
-scripts/render-trailer.js, render-highlights.js, validate-renders.js
+scripts/render-trailer.js, render-highlights.js, render-thumbnails.js, validate-renders.js
+scripts/package-release.js   final release names + MANIFEST/SHA256SUMS/RELEASE_NOTES (validated files only)
+scripts/github-release.js, verify-release.js   GitHub release create/update (REST) + download verification
+.github/workflows/production.yml   manual CI: check | full production, artifact, optional release
 scripts/*.js             other stages (check-deps, verify-urls, fetch-assets, validate-assets,
-                         build-segments, render, clean); install.sh, publish-release.sh
+                         build-segments, render, clean); install.sh
 assets/branding/         committed studio originals (intro MP4, logo)
-docs/PRODUCTION_STATUS.md  verification record, per-game capture results, blockers
+docs/PRODUCTION_STATUS.md  verification record, per-game capture results, QA, blockers
+docs/REGENERATING.md     exact regeneration commands;  docs/ADDING_A_GAME.md  adding a game
+docs/marketing/SOCIAL_COPY.md  draft captions/promo copy (never auto-posted)
 tests/                   node:test suite (npm test)
 ```
 
@@ -60,6 +65,8 @@ Selectors come from the game's own code and tests. Each adapter's header comment
 - Clips reference **manifest events** (`anchor`, `occurrence`, `offset`), never raw seconds. After a re-capture, run `npm test`: it resolves every anchor.
 - **Never blind-crop.** A `crop` framing needs a `verified` note describing what the rectangle keeps, checked against real frames. Otherwise use `fit`, or the game's own portrait capture.
 - After any edit change, run `npm run validate:renders` and look at the `.contact.jpg` sheets before reporting a render as done.
+- Keep text and graphics inside each format's **safe area** (`formats.<fmt>.safe`). In 9:16, never place them in the bottom ~22% or the right ~16%, where platform UI sits.
+- Never post to social accounts from this repository or from CI. `SOCIAL_COPY.md` is a draft for people to post.
 
 ## Workflow
 

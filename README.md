@@ -1,154 +1,178 @@
 # INSPIRE Showreel
 
-Production pipeline for the INSPIRE studio games showreel. It drives the six live games in headless Chromium with Playwright, then assembles the footage with FFmpeg. Every reel opens with the original `inspiresoftwareintro.mp4` and uses each game's own music.
+Production pipeline for **ENTER THE INSPIREVERSE — Official Gameplay Showcase 2026**. It plays the six live INSPIRE browser games with Playwright in real Chromium, records 1080p60 gameplay with sound, cuts trailers to the beat with FFmpeg, validates every file and publishes the results as a GitHub release. Everything in the trailers is genuine captured gameplay or the studio's own media: the original `inspiresoftwareintro.mp4`, the INSPIRE logo and the games' own soundtracks.
 
-| # | Game | Live URL | Source repo |
-|---|------|----------|-------------|
-| 1 | The Hardigan Boys | https://officialinspire.github.io/THE-HARDIGAN-BOYS-vs-THE-MEXICAN-DRUG-CARTEL/ | [officialinspire/THE-HARDIGAN-BOYS-vs-THE-MEXICAN-DRUG-CARTEL](https://github.com/officialinspire/THE-HARDIGAN-BOYS-vs-THE-MEXICAN-DRUG-CARTEL) |
-| 2 | STICKS & BONES | https://officialinspire.github.io/STICKS_-_BONES/ | [officialinspire/STICKS_-_BONES](https://github.com/officialinspire/STICKS_-_BONES) |
-| 3 | INSPIRE Card Parlor | https://officialinspire.github.io/Inspire-card-parlor/ | [officialinspire/Inspire-card-parlor](https://github.com/officialinspire/Inspire-card-parlor) |
-| 4 | Shells & Feathers | https://officialinspire.github.io/SHELLS-FEATHERS/ | [officialinspire/SHELLS-FEATHERS](https://github.com/officialinspire/SHELLS-FEATHERS) |
-| 5 | GRIDLOCK | https://officialinspire.github.io/GRIDLOCK/ | [officialinspire/GRIDLOCK](https://github.com/officialinspire/GRIDLOCK) |
-| 6 | Emoji Elements | https://officialinspire.github.io/EMOJI-ELEMENTS-BETA-VERSION-/ | [officialinspire/EMOJI-ELEMENTS-BETA-VERSION-](https://github.com/officialinspire/EMOJI-ELEMENTS-BETA-VERSION-) |
+| # | Game | Live build | Source (read-only) |
+|---|------|-----------|--------------------|
+| 1 | The Hardigan Boys | https://officialinspire.github.io/THE-HARDIGAN-BOYS-vs-THE-MEXICAN-DRUG-CARTEL/ | [repo](https://github.com/officialinspire/THE-HARDIGAN-BOYS-vs-THE-MEXICAN-DRUG-CARTEL) |
+| 2 | STICKS & BONES | https://officialinspire.github.io/STICKS_-_BONES/ | [repo](https://github.com/officialinspire/STICKS_-_BONES) |
+| 3 | INSPIRE Card Parlor | https://officialinspire.github.io/Inspire-card-parlor/ | [repo](https://github.com/officialinspire/Inspire-card-parlor) |
+| 4 | Shells & Feathers | https://officialinspire.github.io/SHELLS-FEATHERS/ | [repo](https://github.com/officialinspire/SHELLS-FEATHERS) |
+| 5 | GRIDLOCK | https://officialinspire.github.io/GRIDLOCK/ | [repo](https://github.com/officialinspire/GRIDLOCK) |
+| 6 | Emoji Elements | https://officialinspire.github.io/EMOJI-ELEMENTS-BETA-VERSION-/ | [repo](https://github.com/officialinspire/EMOJI-ELEMENTS-BETA-VERSION-) |
 
-The verification status of each URL, asset and startup flow is in [docs/PRODUCTION_STATUS.md](docs/PRODUCTION_STATUS.md).
+## Deliverables
 
-## Requirements
+These are published on the [Releases page](https://github.com/officialinspire/INSPIRE-SHOWREEL/releases), never committed to Git.
 
-- Node.js 20 or later
-- FFmpeg and ffprobe, built with `libx264`, `aac` and `drawtext` (libfreetype)
-- Chromium for Playwright (`playwright@1.63.0`)
-- For capture: Linux with `Xvfb`, `pulseaudio` and `pactl`, and an FFmpeg with the `x11grab` and `pulse` input devices (all installed by `npm run setup` on apt systems)
-- A TrueType font for titles (defaults to DejaVu Sans Bold)
-- Optional: `gh` to publish releases, `git-lfs` for large source masters
+| File | Format |
+|------|--------|
+| `INSPIRE_SHOWREEL_2026_LANDSCAPE.mp4` | 1920×1080, 57 s |
+| `INSPIRE_SHOWREEL_2026_VERTICAL.mp4` | 1080×1920, 57 s (its own composition, not a crop) |
+| `INSPIRE_SHOWREEL_2026_SQUARE.mp4` | 1080×1080, 57 s |
+| `INSPIRE_SHOWREEL_2026_<GAME>_15S_{LANDSCAPE,VERTICAL}.mp4` | 15 s trailer per game, with the game's own sound |
+| `INSPIRE_SHOWREEL_2026_THUMB_{LANDSCAPE,PORTRAIT}.jpg` and `…_<GAME>_THUMB_*.jpg` | thumbnails built from real gameplay frames |
+| `SOCIAL_COPY.md` | draft captions and promotional copy ([source](docs/marketing/SOCIAL_COPY.md)); nothing is posted automatically |
+| `MANIFEST.json`, `SHA256SUMS.txt` | sizes, durations, loudness, codecs and checksums |
+
+Every MP4 has:
+- **Video:** H.264 High (level ≤ 4.2), yuv420p, BT.709, 60 fps.
+- **Audio:** AAC-LC 320 kb/s at 48 kHz stereo.
+- **Container:** `+faststart`.
+- **Loudness:** −14 LUFS, true peak ≤ −1.5 dBFS.
+
+## Quick start
 
 ```bash
 npm run setup
 ```
 
-`npm run setup` runs `scripts/install.sh`, which installs npm packages, downloads Chromium only if it doesn't already launch, installs FFmpeg and fonts with apt or brew if missing, and then runs the dependency check. Pass `--no-system` (`bash scripts/install.sh --no-system`) to skip apt and brew.
-
 ```bash
-npm run check
+npm run produce:all
 ```
 
-`npm run check` verifies Node, FFmpeg encoders and filters, that Chromium launches, the configuration, the font, the studio assets and that every output path is writable. It exits non-zero if a required dependency is missing.
-
-## Producing the reel
-
 ```bash
-npm run produce
+npm run release:github
 ```
 
-`npm run produce` runs every stage in order. You can also run the stages one at a time:
+```bash
+npm run verify:release
+```
 
-| Command | Stage | Output |
-|---------|-------|--------|
-| `npm run check` | Dependency check | console |
-| `npm run verify:urls` | HTTP 200 + `<title>` check for each live game; HEAD check for each pinned asset | `capture/url-report.json` |
-| `npm run fetch` | Downloads studio branding and per-game title cards and music from the **pinned commits** and checks each SHA-256 | `assets/branding/`, `assets/vendor/<game>/`, `assets/vendor/manifest.json` |
-| `npm run validate` | Checks that the intro is bit-identical to the original (hash, size, streams, duration, full decode) and checks the logo and every fetched asset | console |
-| `npm run capture:all` | Plays every live game through its adapter and records 1080p60 picture and game audio, shot by shot, in landscape and portrait where the game supports it | `capture/<game>/<layout>/<shot>.mkv`, screenshots, `capture/<game>/manifest.json`, `capture/summary.json` |
-| `npm run capture:sfx` | SFX-only takes of the same shots (each game's music blocked) for trailers with their own music bed | `capture/<game>/<layout>/sfx/<shot>.mkv` |
-| `npm run capture:<game>` | The same for one game: `hardigan-boys`, `sticks-and-bones`, `card-parlor`, `shells-and-feathers`, `gridlock` or `emoji-elements` | |
-| `npm run build` | Builds uniform H.264/AAC segments: the intro, one per game (cut from the shot named in `games.json` `segment`, with lower third, watermark and game audio) and the end card | `footage/NN-*.mp4` |
-| `npm run render` | Joins the segments with stream copy, then checks duration and decodes the whole file | `renders/inspire-showreel.mp4` and `.json` report |
-| `npm run release` | Uploads the render and its report as a GitHub release | GitHub release |
-| `npm run clean` | Deletes capture, footage and renders (add `-- --all` to also delete fetched assets) | |
-| `npm test` | Configuration and branding-integrity tests | |
+- **`npm run setup`** installs npm packages, Chromium, FFmpeg, Xvfb, PulseAudio and fonts, then checks everything.
+- **`npm run produce:all`** captures, renders, validates and packages everything into `release/`. It takes about 2 h on 4 cores with no GPU.
+- **`npm run release:github`** creates or updates the GitHub release from `release/`.
+- **`npm run verify:release`** downloads the release and checks every asset.
 
-To work on a subset, pass options to the capture commands:
+The same production runs on GitHub: **Actions → Production → Run workflow**. Choose `mode: full`, optionally with `publish_release`. See [CI](#ci-github-actions).
 
-- `npm run capture:gridlock -- --layout=portrait --shot=opening-moves --retries=0`
-- `npm run capture:all -- --only=gridlock,emoji-elements`
+Exact commands for regenerating the trailer, or one game or format, are in **[docs/REGENERATING.md](docs/REGENERATING.md)**. To add a seventh game, see **[docs/ADDING_A_GAME.md](docs/ADDING_A_GAME.md)**. Results, the QA record and blockers are in **[docs/PRODUCTION_STATUS.md](docs/PRODUCTION_STATUS.md)**.
 
-Then run `npm run build -- --only=gridlock --games-only` and `npm run render`. Set `SHOWREEL_VERBOSE=1` to print every FFmpeg command.
+## Requirements
 
-## Capture
+- **System:** Linux, Ubuntu 24.04 as on the reference machine and in CI, with 4 vCPU, 16 GB RAM and about 6 GB free disk. No GPU is needed.
+- **Packages:** Node 22.23.5 (pinned in `.nvmrc`), `playwright@1.63.0` (lockfile; its Chromium revision follows), `ffmpeg` 6.1 (needs `libx264`, `drawtext`, the `x11grab` and `pulse` devices), `xvfb`, `pulseaudio` and `pulseaudio-utils`, `fonts-inter`, `fonts-dejavu-core`.
+- **Optional:** `gh` for releases, `git-lfs` for large source masters.
+- **Network:** the six live game sites, `raw.githubusercontent.com` (asset fetches at pinned commits), npm, Chromium download.
 
-Playwright's built-in recorder gives about 0.8 Mb/s VP8 with no sound, which isn't good enough for a showreel. The capture engine (`scripts/capture/`) records the screen itself instead:
+`npm run check` verifies all of this and exits non-zero if anything required is missing.
 
-1. **Display.** A private **Xvfb** screen at exactly 1920×1080 (landscape) or 1080×1920 (portrait).
-2. **Browser.** **Headed Chromium** is forced into true fullscreen over CDP, so there are no tabs, URL bar or infobars. The viewport is checked to fill the screen before every shot.
-3. **Audio.** A private **PulseAudio** server with a 48 kHz null sink. Chromium plays into it, and FFmpeg records its monitor.
-4. **Recording.** **FFmpeg `x11grab` at 60 fps** plus the Pulse monitor are written to Matroska: x264 ultrafast at CRF 8 (near-lossless) with PCM audio. The mouse cursor is not drawn.
+## Commands
 
-Every shot runs in a fresh browser context. The adapter's `boot` (start gate, studio-intro skip, asset readiness, menus) and the shot's `setup` run **before recording starts**, so footage never contains loading screens or duplicate intros. Only the shot's `run` is recorded.
+| Stage | Command | Output |
+|-------|---------|--------|
+| Verify | `npm run check` · `npm test` · `npm run verify:urls` | console · 16 tests · `capture/url-report.json` |
+| Assets | `npm run fetch` · `npm run validate` | studio intro and logo checked against SHA-256; per-game title cards and music in `assets/vendor/` |
+| Capture | `npm run capture:all` · `npm run capture:<game>` | `capture/<game>/<layout>/<shot>.mkv`, screenshots, `capture/<game>/manifest.json` |
+| | `npm run capture:sfx` | SFX-only takes, with the game music blocked, for the trailer: `capture/<game>/<layout>/sfx/` |
+| | `npm run capture:explore -- <game> [--layout=portrait]` | dev tool: prints visible controls and takes screenshots |
+| | `npm run capture:report` | Markdown tables of every take |
+| Trailer | `npm run render:trailer` · `render:trailer:16x9` · `:9x16` · `:1x1` | `renders/trailer/enter-the-inspireverse-2026-<fmt>.mp4` + `.json` |
+| Highlights | `npm run render:highlights` · `render:highlight:<game>` | `renders/highlights/<game>-{16x9,9x16}.mp4` |
+| Thumbnails | `npm run render:thumbnails` | `renders/thumbnails/*.jpg` |
+| QA | `npm run validate:renders` | `renders/validation.json` + `.contact.jpg` per file |
+| All renders | `npm run render:all` | trailers, highlights, thumbnails, validation |
+| Package | `npm run package:release -- [--tag=…]` | `release/`: final names, `MANIFEST.json`, `SHA256SUMS.txt`, `RELEASE_NOTES.md` |
+| Publish | `npm run release:github -- [tag]` · `npm run verify:release -- [tag]` | GitHub release, verified by download |
+| Everything | `npm run produce:all -- [--tag=…]` | from check to package |
 
-Each recording is then validated from the file itself:
+Games: `hardigan-boys`, `sticks-and-bones`, `card-parlor`, `shells-and-feathers`, `gridlock`, `emoji-elements`.
 
-- resolution and delivered fps
-- black stretches
-- frozen stretches (a single freeze longer than 15 s, or longer than half the shot, fails it)
-- audio level
+Capture options: `--only=a,b`, `--layout=portrait`, `--shot=x,y`, `--retries=N`, `--variant=sfx`. Set `SHOWREEL_VERBOSE=1` to print FFmpeg commands. `npm run build` and `npm run render` still produce the first-generation simple reel, `renders/inspire-showreel.mp4`, with one segment per game.
 
-The page's own render rate is also sampled with `requestAnimationFrame`. A failed shot is retried (`capture.retries`, default 2), and every attempt is timed out. Results, event timelines (`api.mark` beats, every click) and screenshots go into `capture/<game>/manifest.json`. A game and layout counts as complete only when every shot passed or warned, with at least 30 s of usable footage.
+## How it works
 
-**Analytics exclusion.** Before any page script runs, `navigator.doNotTrack`, `globalPrivacyControl` and `window.doNotTrack` are set; every game checks at least one of these. Requests to PostHog and other analytics hosts are also blocked, and Hardigan gets its own `?analytics=off`. Blocked request counts are recorded per shot.
+### Capture (`scripts/capture/`)
 
-**Writing adapters.** See [AGENTS.md](AGENTS.md#adapter-contract). `npm run capture:explore -- <game> [--layout=portrait] [--steps=file.js]` boots a game in the capture environment and prints its visible controls with screenshots.
+Playwright's built-in recorder gives about 0.8 Mb/s VP8 with no sound, so the engine records the screen itself:
 
-## Trailer and highlights: ENTER THE INSPIREVERSE
+1. **Display.** A private **Xvfb** screen at 1920×1080 or 1080×1920.
+2. **Browser.** **Headed Chromium** in true fullscreen over CDP, with no browser chrome. The viewport is verified before every shot.
+3. **Audio.** The game's audio goes into a private **PulseAudio** null sink.
+4. **Recording.** **FFmpeg `x11grab` at 60 fps** plus the sink monitor are written to Matroska: near-lossless x264 with PCM audio.
 
-`config/trailers/inspireverse.json` is the edit decision list for *ENTER THE INSPIREVERSE — Official Gameplay Showcase 2026*. The edit uses only genuine captures and the studio's own media. Its sequence is:
+**Adapters.** Each game's adapter (`scripts/capture/adapters/<game>.js`) is built from that game's own code and tests. It passes the start gate and skips the studio intro **before** recording, then plays real, legal moves. Moves are chosen from the live game state but always made through normal clicks.
 
-1. the original `inspiresoftwareintro.mp4`
-2. The Hardigan Boys
-3. STICKS & BONES
-4. INSPIRE Card Parlor
-5. Shells & Feathers
-6. a GRIDLOCK + Emoji Elements montage
-7. the INSPIRE end card (`ENTER THE INSPIREVERSE / PLAY FREE / WWW.INSPIRECLOTHING.ART`)
+**Validation.** Every take is checked for resolution, delivered fps, black and frozen stretches, and audio level. Failed shots are retried, and results go into a manifest with event timelines and screenshots.
 
-| Command | Output |
-|---------|--------|
-| `npm run render:all` | All three trailer formats, all highlights, then validation |
-| `npm run render:trailer` | `renders/trailer/enter-the-inspireverse-2026-{16x9,9x16,1x1}.mp4` |
-| `npm run render:trailer:16x9` (or `:9x16`, `:1x1`) | One format |
-| `npm run render:highlights` | `renders/highlights/<game>-{16x9,9x16}.mp4`, 15 s each |
-| `npm run render:highlight:<game>` | One game's highlights |
-| `npm run validate:renders` | Checks every MP4, writes `renders/validation.json` and a `.contact.jpg` sheet per file |
+**Analytics exclusion.** Do Not Track and GPC are set, analytics hosts are blocked, and Hardigan gets `?analytics=off`. Capture runs have made 0 analytics requests.
 
-### How the edit is built (`scripts/edit/`)
+### Edit (`scripts/edit/`, `config/trailers/inspireverse.json`)
 
-- **Clips are anchored to capture events, not timestamps.** A clip names a shot, an `anchor` event from that shot's manifest (such as `"scene: The Raid"` or `"place tile"`), an occurrence and an offset. Re-capturing a game therefore keeps the edit intact, and a missing anchor fails with the list of labels the take does have.
-- **Cuts are locked to the music.** The bed is the OFFICIAL INSPIRE *Emoji Elements — Celestial Battle Theme*, measured at 136.00 BPM (bar = 1.7647 s). Every clip is a whole number of bars, and its frame boundaries are rounded from the bar grid, so there is no drift. The music starts on bar 8. That places the track's breakdown on the last Shells & Feathers bar and its drop on the montage.
-- **Each aspect ratio is its own composition**, set per game or per shot in `framing`:
-  - `full`: the capture already matches the canvas.
-  - `fit`: the whole capture over a blurred, darkened fill, so nothing is cut off. Titles move into the fill.
-  - `crop`: a source rectangle checked by eye to contain the action (each has a `verified` note).
-  - 9:16 uses the game's own portrait capture wherever the game supports portrait. The Hardigan Boys has no portrait layout, so it is fitted.
-- **Graphics.** Animated titles in Inter Display Black Italic, close to the INSPIRE wordmark, slide in with an eased fade, an accent-colour bar and a tagline. Montage cuts carry a small game label. Every clip gets a subtle push-in and vignette. Sections are joined with short dips, and the montage starts on a white flash at the drop. The end card shows the INSPIRE logo scaling in over blurred gameplay, with the three lines arriving on the beat.
-- **Audio.** Trailer clips come from **SFX-only takes**: `npm run capture:sfx` records the same shots with each game's music files blocked (and Card Parlor's music muted through its own setting), so the trailer's single music bed never clashes with in-game music. In the mix:
-  1. Each clip's SFX gets 30 ms edge fades, so cuts never click.
-  2. The bed is ducked under the SFX by a sidechain compressor.
-  3. The original intro keeps its own soundtrack.
-  4. The whole mix is two-pass loudness-normalised (linear) to −14 LUFS, then limited at −1.7 dBFS.
-  Highlights instead use the game's own full sound (its music and effects).
-- **Delivery.** H.264 High, yuv420p, 60 fps, CRF 17, AAC 320 kb/s at 48 kHz, `+faststart`.
+- **Clips are anchored to capture events, not timestamps.** An anchor is an event such as `"scene: The Raid"` or `"place tile"`, so re-captures keep the edit valid, and `npm test` resolves every anchor in every format.
+- **Cuts are locked to the music.** The bed is the OFFICIAL INSPIRE *Emoji Elements — Celestial Battle Theme* at 136 BPM. Bar boundaries are computed frame-accurately, so there is no drift. The montage hits on the track's drop.
+- **Each aspect ratio is its own composition.** Each format sets per-game framing:
+  - `full`: the capture matches the canvas.
+  - `fit`: the whole capture over a blurred fill, so nothing is cut.
+  - `crop`: a rectangle checked by eye, recorded with a `verified` note.
+  - 9:16 uses each game's own portrait layout. The Hardigan Boys has no portrait layout and is fitted.
+- **Graphics.** Inter Display titles with eased motion, accent bars, montage labels and an animated end card. They stay inside per-format **platform-safe areas**: in 9:16, clear of the bottom ~22% and right ~16% where Reels, TikTok and Shorts put their UI.
+- **Audio.** The trailer uses SFX-only takes under one music bed, with sidechain ducking and 30 ms edge fades. The intro keeps its own soundtrack. The mix is two-pass loudness-normalised to −14 LUFS and run through a 4× oversampled limiter. Highlights use the game's own full sound.
+- **Colour and compatibility.** Captures are converted from BT.601 to BT.709 and every file is tagged. Output is level 4.2, faststart.
+
+### QA (`npm run validate:renders`)
+
+Each delivered file is checked for:
+- codec, profile and level
+- pixel format and colour tags
+- size and frame rate
+- AAC format
+- faststart
+- exact duration
+- frame-interval regularity
+- A/V length match and start times
+- loudness and true peak (EBU R128)
+- black frames outside the intro
+
+A contact sheet is written for each file for a visual review. `npm run package:release` refuses any file that has not passed validation, or that changed after it.
 
 ## Configuration
 
-- **`config/games.json`** holds each game's live URL, its source repository pinned to a full commit SHA, a description of the startup flow and controls, the reel segment (`segment.shot`, `layout`, `fromSec`, `durationSec`), and its title card and music with SHA-256 hashes. It also holds the studio intro and logo, with expected stream properties and every repository that holds an identical copy. How each game is played lives in its adapter, `scripts/capture/adapters/<id>.js`.
-- **`config/trailer.json`** holds the output name, `paths`, the video and audio encode settings, loudness target, capture settings (layouts, fps, CRF, retries, timeouts, footage target), the intro mode, segment audio mode, segment order, lower third, watermark and end card.
+- `config/games.json` holds:
+  - each game's URL and source repo, pinned to a 40-character commit
+  - startup and controls notes, and the default reel segment
+  - title card and music, with SHA-256
+  - the studio intro and logo hashes
+- `config/trailers/inspireverse.json` holds:
+  - formats and safe areas, brand fonts and colours
+  - music bed and beat grid, ducking and loudness
+  - sections and clips (anchors), framing per format, end card
+  - highlights and thumbnails
+- `config/trailer.json` holds paths, capture settings (layouts, fps, CRF, retries, timeouts) and the encode settings of the simple reel. You can override paths with `SHOWREEL_<KEY>_DIR`, and the config files with `SHOWREEL_GAMES_CONFIG` and `SHOWREEL_TRAILER_CONFIG`.
 
-### Path overrides
+## CI (GitHub Actions)
 
-Every entry in `trailer.json` `paths` can be overridden with `SHOWREEL_<KEY>_DIR`, for example `SHOWREEL_RENDERS_DIR=/mnt/media/renders`. The config files themselves can be swapped with `SHOWREEL_GAMES_CONFIG` and `SHOWREEL_TRAILER_CONFIG`.
+`.github/workflows/production.yml` is triggered manually (`workflow_dispatch`).
 
-## Quality and audio
+**Pinned dependencies:**
+- every action by commit SHA
+- Node from `.nvmrc`
+- npm from the lockfile, with Playwright and its Chromium build fixed by the lockfile
+- Ubuntu 24.04 archive packages, recorded in `system-packages.txt`
 
-- **Studio intro.** `assets/branding/inspiresoftwareintro.mp4` is the original file, byte for byte (SHA-256 `8a6ce01d…cbcb88`). Every one of the five game repos that ships it has an identical copy. The pipeline never writes to it. To place it in the 1920×1080 master, it is scaled 1.5× with Lanczos (`intro.mode: "fit"`) or centred pixel-for-pixel (`"native"`) and encoded at CRF 12. Its own soundtrack is kept, with no loudness change or fades, and only resampled from 44.1 kHz to 48 kHz. The integrated loudness of the original and the rendered intro was measured at −21.0 LUFS for both.
-- **Game footage.** Captured at 1920×1080 and 60 fps (near-lossless). Segments and the render are x264 `slow`, CRF 16, High profile, yuv420p, at 60 fps. The 30 fps studio intro is shown with each frame doubled, with no interpolation.
-- **Game audio.** Each segment carries the game's own sound recorded with the footage (`segments.audio: "game"`). The alternatives are `"music"` (the original music file from the repo at the pinned commit) or `"mix"`. Audio is loudness-normalised to −14 LUFS with 1.5 dB true-peak headroom, then encoded as AAC 320 kb/s at 48 kHz.
+**Modes:**
+- `check` takes about 5 minutes: environment, tests, live URLs, asset hashes.
+- `full` takes about 2 hours: `npm run produce:all`.
 
-## Large media policy
+**Outputs:**
+- **Workflow artifact:** the release package, retained for 14 days. Add raw captures with `upload_raw_captures`.
+- **GitHub release:** with `publish_release`, the workflow publishes and verifies the release.
 
-- Generated media (`capture/`, `footage/`, `renders/`) and fetched assets (`assets/vendor/`) are git-ignored.
-- Finished renders are published as **GitHub release assets** with `npm run release`.
-- The small originals in `assets/branding/` (279 KB intro, 17 KB logo) are committed as normal blobs, so a fresh clone validates without LFS.
-- Any future large source masters go in `assets/masters/`, which `.gitattributes` routes through **Git LFS**.
+Resource requirements are documented at the top of the workflow.
 
-## Ground rules
+## Media policy
 
-This repository only **reads** from the game repositories: raw files at pinned commits, plus the live sites. It never modifies them. See [AGENTS.md](AGENTS.md).
+- Generated media (`capture/`, `footage/`, `renders/`, `release/`) and fetched assets (`assets/vendor/`) are git-ignored. Deliverables go out as **GitHub release assets** or workflow artifacts.
+- Only the small studio originals are committed: the intro (279 KB) and the logo (17 KB).
+- Large source masters belong in `assets/masters/`, which goes through **Git LFS**.
+- The game repositories and live sites are **read-only** sources: this project never modifies them. See [AGENTS.md](AGENTS.md).
