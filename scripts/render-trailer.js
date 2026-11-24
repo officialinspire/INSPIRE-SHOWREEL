@@ -11,7 +11,7 @@ const path = require('path');
 const config = require('./lib/config');
 const { loadEdl, trailerTimeline } = require('./edit/edl');
 const R = require('./edit/render');
-const { log, args, main } = require('./lib/util');
+const { log, args, main, sha256File } = require('./lib/util');
 
 main(async () => {
   const a = args();
@@ -29,6 +29,9 @@ main(async () => {
     log.step(`${edl.title} — ${format} (${fmt.width}x${fmt.height})`);
     const tl = trailerTimeline(cfg, edl, format, { variant });
     for (const c of tl.clips) for (const w of c.src.warnings) log.warn(w);
+    // The same moment of the same take should not appear twice.
+    const used = tl.clips.filter((c) => c.kind === 'clip').map((c) => ({ take: c.src.take, game: c.game, a: c.src.start, b: c.src.start + c.durSec }));
+    used.forEach((u, i) => used.slice(i + 1).forEach((v) => { if (u.game === v.game && u.take === v.take && u.a < v.b && v.a < u.b) log.warn(`${u.game} ${u.take}: clips overlap (${u.a.toFixed(2)}-${u.b.toFixed(2)}s and ${v.a.toFixed(2)}-${v.b.toFixed(2)}s)`); }));
     const work = path.join(cfg.paths.footage, '.trailer', `${edl.id}-${format}`);
     fs.rmSync(work, { recursive: true, force: true });
     fs.mkdirSync(work, { recursive: true });
@@ -40,18 +43,23 @@ main(async () => {
     const jobs = tl.clips.map((c, i) => {
       const next = tl.clips[i + 1];
       const prev = tl.clips[i - 1];
-      const dip = edl.look.sectionDip;
+      const look = edl.look;
+      const flash = look.sectionTransition === 'flash';
       const sectionStart = c.kind === 'clip' && c.firstInSection;
       const sectionEnd = c.kind === 'clip' && c.lastInSection && !c.montage;
+      // Transitions follow the music: a short white flash on each phrase accent (section start),
+      // a bigger one on the drop (montage start); or classic dips when sectionTransition = "dip".
+      const dip = look.sectionDip || 0.16;
       const opts = {
         work,
         audioGain: edl.audio.sfxGain,
         title: c.title,
         label: c.label,
         endcard: c.kind === 'endcard',
-        fadeIn: c.kind === 'endcard' ? 0.3 : sectionStart ? (c.montage ? 0.12 : i === 0 ? 0.25 : dip) : 0,
-        fadeInColor: c.montage && sectionStart && prev ? 'white' : 'black',
-        fadeOut: c.kind === 'endcard' ? 0.45 : sectionEnd && next && !next.montage ? dip : 0,
+        pulse: c.montage && look.pulse?.montage ? { amount: look.pulse.montage, decay: look.pulse.decaySec, beat: tl.beat } : null,
+        fadeIn: c.kind === 'endcard' ? 0.3 : sectionStart ? (i === 0 ? 0.25 : c.montage ? (look.dropFlashSec || 0.12) : flash ? look.flashSec : dip) : 0,
+        fadeInColor: sectionStart && i > 0 && (flash || c.montage) ? 'white' : 'black',
+        fadeOut: c.kind === 'endcard' ? 0.45 : !flash && sectionEnd && next && !next.montage ? dip : 0,
       };
       const file = path.join(work, `${String(i + 1).padStart(3, '0')}-${c.kind === 'endcard' ? 'endcard' : `${c.game}-${c.shot}`}.mkv`);
       files.push(file);
@@ -65,8 +73,9 @@ main(async () => {
     const programme = path.join(work, 'programme.mkv');
     await R.concat(files, programme);
     const totalSec = await R.videoSec(programme, edl.fps); // measured, so audio always matches picture
-    const musicFile = config.vendorPath(cfg, cfg.games.games.find((g) => g.id === edl.music.game), 'music');
-    if (!fs.existsSync(musicFile)) throw new Error(`music bed missing (${musicFile}) — run npm run fetch`);
+    const musicFile = edl.music.file ? path.join(cfg.paths.root, edl.music.file) : config.vendorPath(cfg, cfg.games.games.find((g) => g.id === edl.music.game), 'music');
+    if (!fs.existsSync(musicFile)) throw new Error(`music bed missing (${musicFile})${edl.music.file ? '' : ' — run npm run fetch'}`);
+    if (edl.music.sha256 && sha256File(musicFile) !== edl.music.sha256) throw new Error(`music bed ${musicFile} does not match its recorded SHA-256`);
     const m = edl.music;
     const music = { file: musicFile, fromSec: m.firstDownbeatSec + m.startBar * tl.bar, durSec: tl.musicSec, atSec: introSec, gain: m.gain, fadeIn: m.fadeInSec, fadeOut: m.fadeOutSec };
     const audio = path.join(work, 'mix.wav');
@@ -76,7 +85,7 @@ main(async () => {
     const report = {
       title: edl.title, subtitle: edl.subtitle, format, ...fmt, fps: edl.fps, file: path.relative(cfg.paths.root, out), renderedAt: new Date().toISOString(),
       expectedSec: +(introSec + tl.musicSec).toFixed(3), programmeSec: +totalSec.toFixed(3), introSec: +introSec.toFixed(3), variant,
-      music: { source: path.relative(cfg.paths.root, musicFile), fromSec: +music.fromSec.toFixed(3), bpm: m.bpm, bars: tl.totalBars },
+      music: { source: path.relative(cfg.paths.root, musicFile), title: m.title || null, artist: m.artist || null, fromSec: +music.fromSec.toFixed(3), bpm: m.bpm, bars: tl.totalBars },
       premixLoudness: loud.measuredIn,
       timeline: tl.clips.map((c) => ({ kind: c.kind, game: c.game, shot: c.shot, take: c.src.take, sourceStart: c.src.start, sec: +c.durSec.toFixed(3), bars: c.bars, framing: c.framing, title: c.title?.text, label: c.label?.text })),
     };

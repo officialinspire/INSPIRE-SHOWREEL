@@ -128,7 +128,7 @@ npm run validate:renders -- --only=gridlock
 | Section titles and taglines | `sections[].title`, `tagline`, `accent` |
 | Framing per format | `framing.<format>.<game>` or `<game>/<shot>`: `full`, `fit` or `crop` (with a `verified` note checked against real frames) |
 | Safe areas | `formats.<format>.safe` |
-| Music bed | `music`: game, `bpm`, `firstDownbeatSec`, `startBar`, fades. Changing the track needs a new beat grid. |
+| Music bed | `music`: `file` + `sha256` (or `game`), `bpm`, `firstDownbeatSec`, `startBar`, fades. A new track needs a new beat grid, measured with onset analysis, plus sections re-timed to its phrases. |
 | Loudness and ducking | `audio.loudness`, `audio.duck` |
 | End card text | `endCard.lines` |
 | Highlights and thumbnails | `highlights.games`, `thumbnails.games` |

@@ -27,9 +27,12 @@ function reframe(input, { width: W, height: H }, fr, label) {
 }
 
 /** Push-in over the clip (scale grows by `amount`), re-cropped to the canvas; vignette; fades. */
-function finish(input, { width: W, height: H }, { durSec, pushIn = 0, vignette = 0, fadeIn = 0, fadeOut = 0, fadeInColor = 'black', fps }, label) {
+function finish(input, { width: W, height: H }, { durSec, pushIn = 0, pulse = null, vignette = 0, fadeIn = 0, fadeOut = 0, fadeInColor = 'black', fps }, label) {
   const f = [];
-  if (pushIn > 0) f.push(`scale=w='trunc(${W}*(1+${pushIn}*t/${durSec.toFixed(4)})/2)*2':h=-2:eval=frame:flags=bicubic`, `crop=${W}:${H}`);
+  // Zoom = slow push-in, plus (montage) a short pulse on every beat: clips start on beat lines,
+  // so mod(t, beat) is the time since the last beat of the music.
+  const pulseTerm = pulse && pulse.amount > 0 ? `+${pulse.amount}*exp(-mod(t,${pulse.beat.toFixed(5)})/${pulse.decay})` : '';
+  if (pushIn > 0 || pulseTerm) f.push(`scale=w='trunc(${W}*(1+${pushIn}*t/${durSec.toFixed(4)}${pulseTerm})/2)*2':h=-2:eval=frame:flags=bicubic`, `crop=${W}:${H}`);
   if (vignette > 0) f.push(`vignette=angle=${vignette}`);
   // Clone the last frame if a source runs short, so every intermediate has its exact frame count.
   f.push(`fps=${fps}`, 'tpad=stop_mode=clone:stop_duration=0.5', 'format=yuv420p');

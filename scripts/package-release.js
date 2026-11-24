@@ -21,7 +21,7 @@ const mb = (n) => `${(n / 1048576).toFixed(1)} MB`;
 main(async () => {
   const a = args();
   const cfg = config.load();
-  const tag = typeof a.tag === 'string' ? a.tag : 'showreel-2026-v1.0.0';
+  const tag = typeof a.tag === 'string' ? a.tag : 'showreel-2026-v1.1.0';
   const valFile = path.join(cfg.paths.renders, 'validation.json');
   if (!fs.existsSync(valFile)) throw new Error('renders/validation.json missing — run npm run validate:renders');
   const val = JSON.parse(fs.readFileSync(valFile, 'utf8'));
@@ -102,7 +102,7 @@ Also attached:
 
 **Games.** [The Hardigan Boys](https://officialinspire.github.io/THE-HARDIGAN-BOYS-vs-THE-MEXICAN-DRUG-CARTEL/) · [STICKS & BONES](https://officialinspire.github.io/STICKS_-_BONES/) · [INSPIRE Card Parlor](https://officialinspire.github.io/Inspire-card-parlor/) · [Shells & Feathers](https://officialinspire.github.io/SHELLS-FEATHERS/) · [GRIDLOCK](https://officialinspire.github.io/GRIDLOCK/) · [Emoji Elements](https://officialinspire.github.io/EMOJI-ELEMENTS-BETA-VERSION-/). Play free at www.inspireclothing.art.
 
-**Music.** The bed is the OFFICIAL INSPIRE *Emoji Elements — Celestial Battle Theme*. Highlights use each game's own sound. Music rights must be confirmed by the owner before public posting; see \`docs/PRODUCTION_STATUS.md\`.
+**Music.** The showreels are cut to the studio's theme song, *Inspire Showcase (Pure Cyber Beat)* by officialinspire (146.05 BPM). Every cut lands on a beat: each game section is one 4-bar phrase, and the GRIDLOCK + Emoji Elements montage hits the drop. The 15-second game trailers use each game's own sound; confirm those soundtracks' rights before public posting (see \`docs/PRODUCTION_STATUS.md\`).
 
 **Regenerate.** \`npm run produce:all\`, or run the *Production* workflow (Actions → Production → Run workflow).
 `;

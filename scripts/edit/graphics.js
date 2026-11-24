@@ -79,7 +79,8 @@ function montageLabel(L, fmt, fr, brand, label, durSec) {
   const size = Math.round(S * 0.042);
   const safe = safeOf(fmt);
   const x0 = Math.round(Math.max(W * 0.05, W * safe.left));
-  const y = Math.round(Math.min(fr.mode === 'fit' ? titleY(fmt, fr) : H - S * 0.12, H * (1 - safe.bottom) - size * 1.3));
+  // Landscape: 80% height clears in-game toasts that games put along the bottom edge (e.g. GRIDLOCK).
+  const y = Math.round(Math.min(fr.mode === 'fit' ? titleY(fmt, fr) : W > H ? H * 0.8 : H - S * 0.12, H * (1 - safe.bottom) - size * 1.3));
   const bi = L.input(['-f', 'lavfi', '-i', `color=c=${label.accent || brand.accent}:s=${Math.max(5, Math.round(size / 6))}x${Math.round(size * 1.05)}:r=60,format=rgba,fade=t=in:st=0.05:d=0.12:alpha=1`]);
   return {
     filters: [drawText(L, { font: brand.font, text: label.text, size, x: `${x0 + Math.round(size * 0.45)}+18*(1-${ease(0.05, 0.25)})`, y: `${y}`, a: alpha(0.05, durSec + 1, 0.15, 0.1), borderw: 3 })],

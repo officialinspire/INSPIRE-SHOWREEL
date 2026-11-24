@@ -25,7 +25,7 @@ function interArgs(edl) {
 }
 
 /** Render one timeline item to an intermediate .mkv. */
-async function renderItem(cfg, edl, fmt, item, out, { fadeIn = 0, fadeOut = 0, fadeInColor = 'black', title, label, endcard, tag, audioGain = 1, mute = false, work }) {
+async function renderItem(cfg, edl, fmt, item, out, { fadeIn = 0, fadeOut = 0, fadeInColor = 'black', pulse = null, title, label, endcard, tag, audioGain = 1, mute = false, work }) {
   const fps = edl.fps;
   const dur = item.frames / fps;
   const brand = { ...edl.brand, logo: path.join(cfg.paths.root, edl.brand.logo) };
@@ -39,7 +39,7 @@ async function renderItem(cfg, edl, fmt, item, out, { fadeIn = 0, fadeOut = 0, f
     parts.push(`${v}boxblur=18:3,eq=brightness=-0.2:saturation=0.8[c_bg]`);
     v = '[c_bg]';
   }
-  const fx = finish(v, fmt, { durSec: dur, pushIn: endcard ? 0.02 : edl.look.pushIn, vignette: edl.look.vignette, fadeIn, fadeOut, fadeInColor, fps }, 'c');
+  const fx = finish(v, fmt, { durSec: dur, pushIn: endcard ? 0.02 : edl.look.pushIn, pulse, vignette: edl.look.vignette, fadeIn, fadeOut, fadeInColor, fps }, 'c');
   parts.push(fx.graph);
   v = fx.out;
   const gfx = [];
