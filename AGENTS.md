@@ -27,7 +27,14 @@ scripts/capture/         capture engine
   runner.js              per-layout/per-shot loop, retries, timeouts, manifest + summary
   explore.js             dev tool: boot a game and dump its visible controls + screenshots
   adapters/<game>.js     one adapter per game (see "Adapter contract")
-scripts/capture-games.js CLI for npm run capture:all / capture:<id>
+scripts/capture-games.js CLI for npm run capture:all / capture:<id> / capture:sfx
+config/trailers/<name>.json  edit decision lists (trailer + highlights)
+scripts/edit/            editing engine
+  edl.js                 resolves clips to captures via manifest event anchors; bar-locked timeline
+  frame.js               per-aspect reframing (full / fit over blurred fill / verified crop), push-in
+  graphics.js            animated titles, montage labels, end card, highlight brand tag
+  render.js              clip intermediates, concat, ducked music mix, loudnorm, delivery encode
+scripts/render-trailer.js, render-highlights.js, validate-renders.js
 scripts/*.js             other stages (check-deps, verify-urls, fetch-assets, validate-assets,
                          build-segments, render, clean); install.sh, publish-release.sh
 assets/branding/         committed studio originals (intro MP4, logo)
@@ -45,6 +52,14 @@ tests/                   node:test suite (npm test)
 - `shots[]`: each shot is `{ id, title, layouts?, maxSec, setup?(api), run(api) }`. `setup` is unrecorded. Only `run` is recorded. Call `api.mark(label)` at each story beat.
 
 Selectors come from the game's own code and tests. Each adapter's header comment names those sources. Prefer `data-*` attributes and IDs over text. Use `force: true` clicks for pulsing or animated buttons.
+
+## Editing rules
+
+- Trailers and highlights use **only genuine captures and the studio's own media**: the original intro, the INSPIRE logo, and the games' own soundtracks fetched at pinned commits. Never add stock footage, generated imagery or unlicensed music. The OFFICIAL INSPIRE soundtracks carry no licence file in their repos, so record music approval in `docs/PRODUCTION_STATUS.md`.
+- Trailer clips come from **SFX-only takes** (`npm run capture:sfx`) so that the music bed never clashes with in-game music. Highlights use the full-audio takes.
+- Clips reference **manifest events** (`anchor`, `occurrence`, `offset`), never raw seconds. After a re-capture, run `npm test`: it resolves every anchor.
+- **Never blind-crop.** A `crop` framing needs a `verified` note describing what the rectangle keeps, checked against real frames. Otherwise use `fit`, or the game's own portrait capture.
+- After any edit change, run `npm run validate:renders` and look at the `.contact.jpg` sheets before reporting a render as done.
 
 ## Workflow
 

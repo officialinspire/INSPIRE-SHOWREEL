@@ -29,7 +29,7 @@ async function renderItem(cfg, edl, fmt, item, out, { fadeIn = 0, fadeOut = 0, f
   parts.push(rf.graph);
   let v = rf.out;
   if (endcard) {
-    parts.push(`${v}boxblur=22:3,eq=brightness=-0.32:saturation=0.7[c_bg]`);
+    parts.push(`${v}boxblur=18:3,eq=brightness=-0.2:saturation=0.8[c_bg]`);
     v = '[c_bg]';
   }
   const fx = finish(v, fmt, { durSec: dur, pushIn: endcard ? 0.02 : edl.look.pushIn, vignette: edl.look.vignette, fadeIn, fadeOut, fadeInColor, fps }, 'c');

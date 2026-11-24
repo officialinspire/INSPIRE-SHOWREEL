@@ -76,7 +76,7 @@ function montageLabel(L, fmt, fr, brand, label, durSec) {
   const y = fr.mode === 'fit' ? titleY(fmt, fr) : Math.round(H - S * 0.12);
   const bi = L.input(['-f', 'lavfi', '-i', `color=c=${label.accent || brand.accent}:s=${Math.max(5, Math.round(size / 6))}x${Math.round(size * 1.05)}:r=60,format=rgba,fade=t=in:st=0.05:d=0.12:alpha=1`]);
   return {
-    filters: [drawText(L, { font: brand.font, text: label.text, size, x: `${x0 + Math.round(size * 0.45)}+18*(1-${ease(0.05, 0.25)})`, y: `${y}`, a: alpha(0.05, durSec + 1, 0.15, 0.1), borderw: 0 })],
+    filters: [drawText(L, { font: brand.font, text: label.text, size, x: `${x0 + Math.round(size * 0.45)}+18*(1-${ease(0.05, 0.25)})`, y: `${y}`, a: alpha(0.05, durSec + 1, 0.15, 0.1), borderw: 3 })],
     overlays: [{ input: bi, x: String(x0), y: String(y - Math.round(size * 0.05)) }],
   };
 }
