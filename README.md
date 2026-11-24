@@ -13,7 +13,7 @@ Production pipeline for **ENTER THE INSPIREVERSE — Official Gameplay Showcase 
 
 ## Deliverables
 
-These are published on the [Releases page](https://github.com/officialinspire/inspire-showreel/releases), never committed to Git.
+These are published on the [Releases page](https://github.com/officialinspire/INSPIRE-SHOWREEL/releases), never committed to Git.
 
 | File | Format |
 |------|--------|

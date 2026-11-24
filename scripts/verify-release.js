@@ -33,7 +33,7 @@ main(async () => {
       const r = assets.get(a.name);
       if (!r) { fails.push(`${a.name}: not attached`); continue; }
       if (r.size !== a.bytes) { fails.push(`${a.name}: ${r.size} bytes attached, ${a.bytes} expected`); continue; }
-      if (r.browser_download_url !== a.url) fails.push(`${a.name}: download URL ${r.browser_download_url} differs from the release notes (${a.url})`);
+      if (r.browser_download_url.toLowerCase() !== a.url.toLowerCase()) fails.push(`${a.name}: download URL ${r.browser_download_url} differs from the release notes (${a.url})`);
       const f = path.join(dir, a.name);
       await download(r.browser_download_url, f);
       if (sha256File(f) !== a.sha256) { fails.push(`${a.name}: SHA-256 mismatch after download`); continue; }

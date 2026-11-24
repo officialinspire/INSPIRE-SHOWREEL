@@ -13,7 +13,7 @@ const path = require('path');
 const config = require('./lib/config');
 const { run, log, args, sha256File, main } = require('./lib/util');
 
-const REPO = process.env.GITHUB_REPOSITORY || 'officialinspire/inspire-showreel';
+const REPO = process.env.GITHUB_REPOSITORY || 'officialinspire/INSPIRE-SHOWREEL';
 const FORMAT = { '16x9': 'LANDSCAPE', '9x16': 'VERTICAL', '1x1': 'SQUARE' };
 const GAME = (id) => id.toUpperCase().replace(/-/g, '_');
 const mb = (n) => `${(n / 1048576).toFixed(1)} MB`;
