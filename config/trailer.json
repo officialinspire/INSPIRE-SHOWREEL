@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "title": "INSPIRE Showreel",
+  "output": "inspire-showreel.mp4",
+  "paths": {
+    "assets": "assets",
+    "vendor": "assets/vendor",
+    "capture": "capture",
+    "footage": "footage",
+    "renders": "renders"
+  },
+  "video": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "codec": "libx264",
+    "preset": "slow",
+    "crf": 16,
+    "pixFmt": "yuv420p",
+    "profile": "high"
+  },
+  "audio": {
+    "codec": "aac",
+    "bitrate": "320k",
+    "sampleRate": 48000,
+    "channels": 2,
+    "musicVolume": 0.85,
+    "loudnorm": { "enabled": true, "I": -14, "TP": -1.5, "LRA": 11 }
+  },
+  "capture": {
+    "viewport": { "width": 1920, "height": 1080 },
+    "deviceScaleFactor": 1,
+    "headless": true,
+    "chromiumArgs": ["--autoplay-policy=no-user-gesture-required"],
+    "navigationTimeoutMs": 45000,
+    "stepScreenshots": true
+  },
+  "intro": {
+    "comment": "The studio intro is never altered on disk. 'fit' scales 1080x720 to 1620x1080 (lanczos) and pillarboxes; 'native' centres it pixel-for-pixel. Its own soundtrack is kept and only resampled to the master rate.",
+    "enabled": true,
+    "mode": "fit",
+    "crf": 12,
+    "background": "black"
+  },
+  "segments": {
+    "order": ["hardigan-boys", "sticks-and-bones", "card-parlor", "shells-and-feathers", "gridlock", "emoji-elements"],
+    "fadeSec": 0.5,
+    "lowerThird": {
+      "enabled": true,
+      "fontFile": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+      "fontSize": 64,
+      "taglineSize": 34,
+      "showFromSec": 0.8,
+      "showForSec": 4.5
+    },
+    "watermark": { "enabled": true, "widthPx": 220, "marginPx": 40, "opacity": 0.85 }
+  },
+  "endCard": {
+    "enabled": true,
+    "durationSec": 4,
+    "logoWidthPx": 900,
+    "text": "www.inspireclothing.art",
+    "fontSize": 44
+  }
+}

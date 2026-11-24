@@ -1,0 +1,10 @@
+# Small originals in assets/branding/ (< 1 MB) are committed as regular blobs so the repo works without LFS.
+# Large source masters (raw footage, high-bitrate music stems, etc.) belong in assets/masters/ and go through Git LFS.
+assets/masters/** filter=lfs diff=lfs merge=lfs -text
+
+*.mp4 binary
+*.webm binary
+*.mp3 binary
+*.m4a binary
+*.png binary
+*.jpg binary

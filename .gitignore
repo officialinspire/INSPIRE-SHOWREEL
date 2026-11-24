@@ -1,0 +1,15 @@
+node_modules/
+
+# Generated media: never committed. Publish renders as GitHub release assets (npm run release).
+capture/*
+!capture/.gitkeep
+footage/*
+!footage/.gitkeep
+renders/*
+!renders/.gitkeep
+
+# Fetched per-game assets (re-downloadable from pinned commits with npm run fetch)
+assets/vendor/
+
+*.part
+.DS_Store

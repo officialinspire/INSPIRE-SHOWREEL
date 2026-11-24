@@ -1,0 +1,576 @@
+{
+  "version": 1,
+  "owner": "officialinspire",
+  "verifiedOn": "2026-11-24",
+  "studio": {
+    "name": "INSPIRE",
+    "intro": {
+      "file": "assets/branding/inspiresoftwareintro.mp4",
+      "sha256": "8a6ce01dde56350a8e13aa09b194a4205ca13e1e826d34e71381896a20cbcb88",
+      "bytes": 278774,
+      "expect": {
+        "videoCodec": "h264",
+        "width": 1080,
+        "height": 720,
+        "fps": "30/1",
+        "audioCodec": "aac",
+        "sampleRate": 44100,
+        "channels": 2,
+        "durationSec": 5.869
+      },
+      "sources": [
+        {
+          "repo": "GRIDLOCK",
+          "commit": "e8b087d0dc3ff0ba42f074eb6321d3907f68965a",
+          "path": "assets/media/inspiresoftwareintro.mp4"
+        },
+        {
+          "repo": "STICKS_-_BONES",
+          "commit": "77ca671e534054cce85ef284a9984df8f832d904",
+          "path": "assets/video/inspiresoftwareintro.mp4"
+        },
+        {
+          "repo": "THE-HARDIGAN-BOYS-vs-THE-MEXICAN-DRUG-CARTEL",
+          "commit": "dc5f1d732472c6d27839755dbb000cae9ae820d5",
+          "path": "inspiresoftwareintro.mp4"
+        },
+        {
+          "repo": "SHELLS-FEATHERS",
+          "commit": "2244a59e11f4001db80d1173e62e44895c123911",
+          "path": "inspiresoftwareintro.mp4"
+        },
+        {
+          "repo": "EMOJI-ELEMENTS-BETA-VERSION-",
+          "commit": "8fc3cc8bff3570ed6f71d28517103250c460cf13",
+          "path": "inspiresoftwareintro.mp4"
+        }
+      ]
+    },
+    "logo": {
+      "file": "assets/branding/inspire-logo.png",
+      "sha256": "f182ae2bfc59fa97c06a0a0785c2e391e8883cf8f62cf7639d6c8d1ede8c9eb9",
+      "bytes": 17036,
+      "expect": {
+        "width": 600,
+        "height": 181
+      },
+      "sources": [
+        {
+          "repo": "GRIDLOCK",
+          "commit": "e8b087d0dc3ff0ba42f074eb6321d3907f68965a",
+          "path": "assets/media/inspire.png"
+        },
+        {
+          "repo": "SHELLS-FEATHERS",
+          "commit": "2244a59e11f4001db80d1173e62e44895c123911",
+          "path": "inspire-logo.png"
+        },
+        {
+          "repo": "THE-HARDIGAN-BOYS-vs-THE-MEXICAN-DRUG-CARTEL",
+          "commit": "dc5f1d732472c6d27839755dbb000cae9ae820d5",
+          "path": "logo.png"
+        }
+      ]
+    }
+  },
+  "games": [
+    {
+      "id": "hardigan-boys",
+      "title": "The Hardigan Boys",
+      "fullTitle": "THE HARDIGAN BOYS vs THE MEXICAN DRUG CARTEL",
+      "tagline": "A point-and-click mystery adventure",
+      "repo": "THE-HARDIGAN-BOYS-vs-THE-MEXICAN-DRUG-CARTEL",
+      "commit": "dc5f1d732472c6d27839755dbb000cae9ae820d5",
+      "url": "https://officialinspire.github.io/THE-HARDIGAN-BOYS-vs-THE-MEXICAN-DRUG-CARTEL/",
+      "expectTitle": "THE HARDIGAN BOYS vs THE MEXICAN DRUG CARTEL",
+      "stack": "Static HTML/JS, no build step",
+      "startup": "Start screen (#touch-start-btn \"TOUCH TO START\") -> studio intro #intro-video (skip: #intro-skip-btn \"TAP TO SKIP\") -> main menu (#btn-new-game, #btn-continue-game, #btn-options).",
+      "controls": "Point and click / tap. Inventory, Notebook and Pause buttons on the HUD.",
+      "capture": {
+        "steps": [
+          {
+            "do": "wait",
+            "ms": 2500
+          },
+          {
+            "do": "click",
+            "selector": "#touch-start-btn",
+            "force": true
+          },
+          {
+            "do": "waitFor",
+            "selector": "#btn-new-game",
+            "timeout": 20000
+          },
+          {
+            "do": "wait",
+            "ms": 800
+          },
+          {
+            "do": "mark",
+            "name": "menu"
+          },
+          {
+            "do": "wait",
+            "ms": 3500
+          },
+          {
+            "do": "click",
+            "selector": "#btn-new-game",
+            "force": true
+          },
+          {
+            "do": "mark",
+            "name": "gameplay"
+          },
+          {
+            "do": "wait",
+            "ms": 12000
+          }
+        ]
+      },
+      "segment": {
+        "from": "menu",
+        "durationSec": 12
+      },
+      "assets": {
+        "titleCard": {
+          "path": "promo/hardigan-boys-vs-drug-cartel-promo-title-card.jpg",
+          "sha256": "7c4480a1e69d73f073f536250c3f2e13a00b90b4f34a33bfe645edaff608e4e2"
+        },
+        "music": {
+          "path": "audio/main-menu-theme.mp3",
+          "sha256": "c433dbff6d3252952e13cd434fad254ed943a521dc762028822ef39e86bd6945",
+          "startSec": 0
+        }
+      }
+    },
+    {
+      "id": "sticks-and-bones",
+      "title": "STICKS & BONES",
+      "fullTitle": "STICKS & BONES — No Rest for Cousin",
+      "tagline": "Dominoes with family, story and stakes",
+      "repo": "STICKS_-_BONES",
+      "commit": "77ca671e534054cce85ef284a9984df8f832d904",
+      "url": "https://officialinspire.github.io/STICKS_-_BONES/",
+      "expectTitle": "STICKS & BONES",
+      "stack": "Vite + TypeScript, deployed by .github/workflows/deploy-pages.yml",
+      "startup": "Full-screen gate \"Tap, click or press Enter to start\" -> studio intro (hashed asset inspiresoftwareintro-*.mp4; Skip intro / Mute arm 400 ms after the start input is released) -> main menu (Story, Quick Play, Two Players, How to Play, Settings, Statistics, Achievements).",
+      "controls": "Tap/click a domino, then an open end. Enter/any key starts. See repo README and in-game How to Play.",
+      "capture": {
+        "steps": [
+          {
+            "do": "wait",
+            "ms": 2500
+          },
+          {
+            "do": "press",
+            "key": "Enter"
+          },
+          {
+            "do": "waitFor",
+            "text": "Quick Play",
+            "timeout": 20000
+          },
+          {
+            "do": "wait",
+            "ms": 800
+          },
+          {
+            "do": "mark",
+            "name": "menu"
+          },
+          {
+            "do": "wait",
+            "ms": 3500
+          },
+          {
+            "do": "click",
+            "text": "Quick Play",
+            "force": true
+          },
+          {
+            "do": "mark",
+            "name": "gameplay"
+          },
+          {
+            "do": "wait",
+            "ms": 2500
+          },
+          {
+            "do": "click",
+            "text": "Deal the tiles",
+            "force": true,
+            "optional": true,
+            "timeout": 5000
+          },
+          {
+            "do": "wait",
+            "ms": 12000
+          }
+        ]
+      },
+      "segment": {
+        "from": "menu",
+        "durationSec": 12
+      },
+      "assets": {
+        "titleCard": {
+          "path": "public/social/sticks-and-bones-og-v1.jpg",
+          "sha256": "ba391178b8443f5ee46f8cd45a3da75ac393543c88f07175ea149a99262e4de1"
+        },
+        "music": {
+          "path": "assets/audio/music/Domino Table (Subtle Vibe).mp3",
+          "sha256": "19ec7e80026246f8c1b88d5942a3e579a934a2ba01a40e18b174249f93ea4e6d",
+          "startSec": 0
+        }
+      }
+    },
+    {
+      "id": "card-parlor",
+      "title": "INSPIRE Card Parlor",
+      "fullTitle": "INSPIRE CARD PARLOR — Classic Card Games by OFFICIAL INSPIRE",
+      "tagline": "Classic card games, story mode and collectible decks",
+      "repo": "Inspire-card-parlor",
+      "commit": "095932303f6080ed4abc63bf7aa71c8591cb8de2",
+      "url": "https://officialinspire.github.io/Inspire-card-parlor/",
+      "expectTitle": "INSPIRE CARD PARLOR",
+      "stack": "Vite + TypeScript, deployed by .github/workflows/deploy.yml",
+      "startup": "Animated title (\"Skip intro\") -> \"TOUCH TO START / ENTER PARLOR\" -> studio intro video (\"Skip video\") -> hub (Story Mode, Quick Play Klondike, Card Games, Collection, Gameboards, Passport, Achievements).",
+      "controls": "Tap/click cards; drag in solitaire. Any tap/Enter/Space/Escape skips the title animation.",
+      "capture": {
+        "steps": [
+          {
+            "do": "waitFor",
+            "text": "ENTER PARLOR",
+            "timeout": 20000
+          },
+          {
+            "do": "wait",
+            "ms": 800
+          },
+          {
+            "do": "click",
+            "text": "ENTER PARLOR",
+            "force": true
+          },
+          {
+            "do": "waitFor",
+            "text": "QUICK PLAY",
+            "timeout": 25000
+          },
+          {
+            "do": "wait",
+            "ms": 800
+          },
+          {
+            "do": "mark",
+            "name": "menu"
+          },
+          {
+            "do": "wait",
+            "ms": 3500
+          },
+          {
+            "do": "click",
+            "text": "QUICK PLAY",
+            "force": true
+          },
+          {
+            "do": "mark",
+            "name": "gameplay"
+          },
+          {
+            "do": "wait",
+            "ms": 2500
+          },
+          {
+            "do": "click",
+            "text": "Deal",
+            "force": true,
+            "optional": true,
+            "timeout": 5000
+          },
+          {
+            "do": "wait",
+            "ms": 12000
+          }
+        ]
+      },
+      "segment": {
+        "from": "menu",
+        "durationSec": 12
+      },
+      "assets": {
+        "titleCard": {
+          "path": "public/assets/branding/social-card.jpg",
+          "sha256": "577cfa879393e422eb1848be6c4884901a56bb8fcfa3d61eb56a48dffa4b1a99"
+        },
+        "music": {
+          "path": "public/assets/music/inspire-card-parlor-menu-track.m4a",
+          "sha256": "8b4c6ec80c6bd626d26b760758ccb17dd0e5312c25e46560baf4a02351644571",
+          "startSec": 0
+        }
+      }
+    },
+    {
+      "id": "shells-and-feathers",
+      "title": "Shells & Feathers",
+      "fullTitle": "Spirit of the Woods — Shells & Feathers",
+      "tagline": "Peaceful games from the forest",
+      "repo": "SHELLS-FEATHERS",
+      "commit": "2244a59e11f4001db80d1173e62e44895c123911",
+      "url": "https://officialinspire.github.io/SHELLS-FEATHERS/",
+      "expectTitle": "Spirit of the Woods",
+      "stack": "Static HTML/CSS/ES modules, no build step",
+      "startup": "Start screen #start-button \"Touch, click, or press any key to start\" (pulsing; Playwright needs force:true) -> studio intro #intro-video once per browser session (skip: #intro-skip, Escape/Enter/Space) -> Spirit of the Woods hub: Shells & Feathers (tic-tac-toe) and Acorns & Leaves (checkers). The Shells & Feathers Play link is a[href=\"#/shells-feathers\"].",
+      "controls": "Tap a square / arrow keys + Enter or Space. Menu above the board; Escape steps back.",
+      "capture": {
+        "steps": [
+          {
+            "do": "wait",
+            "ms": 2500
+          },
+          {
+            "do": "click",
+            "selector": "#start-button",
+            "force": true
+          },
+          {
+            "do": "wait",
+            "ms": 1500
+          },
+          {
+            "do": "waitFor",
+            "selector": "#intro-video",
+            "state": "hidden",
+            "timeout": 20000
+          },
+          {
+            "do": "waitFor",
+            "selector": "a[href=\"#/shells-feathers\"]",
+            "timeout": 10000
+          },
+          {
+            "do": "wait",
+            "ms": 800
+          },
+          {
+            "do": "mark",
+            "name": "menu"
+          },
+          {
+            "do": "wait",
+            "ms": 3500
+          },
+          {
+            "do": "click",
+            "selector": "a[href=\"#/shells-feathers\"]",
+            "force": true
+          },
+          {
+            "do": "mark",
+            "name": "gameplay"
+          },
+          {
+            "do": "wait",
+            "ms": 2500
+          },
+          {
+            "do": "click",
+            "text": "Play the Spirit",
+            "force": true,
+            "optional": true,
+            "timeout": 5000
+          },
+          {
+            "do": "wait",
+            "ms": 12000
+          }
+        ]
+      },
+      "segment": {
+        "from": "menu",
+        "durationSec": 12
+      },
+      "assets": {
+        "titleCard": {
+          "path": "assets/spirit-of-the-woods-social.jpg",
+          "sha256": "e8ba8719b6d21eb14a2c9e079d593373361a108057f5c865bce63715fa28edee"
+        },
+        "music": {
+          "path": "gameplay.mp3",
+          "sha256": "a51c10cfe783d063741fb8c702ed893c95e2047e9ddd09d3912d30f657e8b8a2",
+          "startSec": 0
+        }
+      }
+    },
+    {
+      "id": "gridlock",
+      "title": "GRIDLOCK",
+      "fullTitle": "GRIDLOCK — Grid Lock City by INSPIRE",
+      "tagline": "Pave roads, claim blocks, build the city",
+      "repo": "GRIDLOCK",
+      "commit": "e8b087d0dc3ff0ba42f074eb6321d3907f68965a",
+      "url": "https://officialinspire.github.io/GRIDLOCK/",
+      "expectTitle": "GRIDLOCK",
+      "stack": "Static HTML/CSS/ES modules, no build step",
+      "startup": "Title #start-button \"Click or press Enter to start\" -> studio intro #intro-video (skip: #intro-skip) -> title menu (Play Solo, Local Multiplayer, Custom / Mixed Game, How To Play, Statistics, Settings).",
+      "controls": "Click the gap between intersections to pave; click a block to build. Tab/arrows/Enter on keyboard. Pause button top-left.",
+      "capture": {
+        "steps": [
+          {
+            "do": "wait",
+            "ms": 2500
+          },
+          {
+            "do": "click",
+            "selector": "#start-button",
+            "force": true
+          },
+          {
+            "do": "waitFor",
+            "text": "Play Solo",
+            "timeout": 20000
+          },
+          {
+            "do": "wait",
+            "ms": 800
+          },
+          {
+            "do": "mark",
+            "name": "menu"
+          },
+          {
+            "do": "wait",
+            "ms": 3500
+          },
+          {
+            "do": "click",
+            "text": "Play Solo",
+            "force": true
+          },
+          {
+            "do": "click",
+            "selector": "#setup-start",
+            "force": true,
+            "optional": true,
+            "timeout": 5000
+          },
+          {
+            "do": "click",
+            "selector": "#city-intro-go",
+            "force": true,
+            "optional": true,
+            "timeout": 5000
+          },
+          {
+            "do": "mark",
+            "name": "gameplay"
+          },
+          {
+            "do": "wait",
+            "ms": 12000
+          }
+        ]
+      },
+      "segment": {
+        "from": "menu",
+        "durationSec": 12
+      },
+      "assets": {
+        "titleCard": {
+          "path": "GRIDLOCK paper-cut cityscape.png",
+          "sha256": "c1f4603c3080268ca4bb1d8e285d5a05b3a3101919d092c3cd530d7af71aa462"
+        },
+        "music": {
+          "path": "assets/media/cardboard-city.mp3",
+          "sha256": "9441456e2f930cedaae8a3b85db14f8713efd367e216d202325a2b5a95b8a9f7",
+          "startSec": 0
+        }
+      }
+    },
+    {
+      "id": "emoji-elements",
+      "title": "Emoji Elements",
+      "fullTitle": "EMOJI ELEMENTS",
+      "tagline": "Elemental card battles",
+      "repo": "EMOJI-ELEMENTS-BETA-VERSION-",
+      "commit": "8fc3cc8bff3570ed6f71d28517103250c460cf13",
+      "url": "https://officialinspire.github.io/EMOJI-ELEMENTS-BETA-VERSION-/",
+      "expectTitle": "EMOJI ELEMENTS",
+      "stack": "Static HTML/JS PWA (service worker)",
+      "startup": "Click-to-start overlay #clickToStart -> studio intro #introVideo inside #introContainer -> main menu (NEW GAME, DECK BUILDER, COLLECTION, PACK SHOP, HOW TO PLAY, STATS, ACHIEVEMENTS).",
+      "controls": "Tap/click a card to play it; long-press/right-click for details. Keyboard: Space/E end turn, A attack, M mulligan, H history, Esc pause.",
+      "capture": {
+        "steps": [
+          {
+            "do": "wait",
+            "ms": 2500
+          },
+          {
+            "do": "click",
+            "selector": "#clickToStart",
+            "force": true
+          },
+          {
+            "do": "waitFor",
+            "text": "NEW GAME",
+            "timeout": 20000
+          },
+          {
+            "do": "wait",
+            "ms": 800
+          },
+          {
+            "do": "mark",
+            "name": "menu"
+          },
+          {
+            "do": "wait",
+            "ms": 3500
+          },
+          {
+            "do": "click",
+            "text": "NEW GAME",
+            "force": true
+          },
+          {
+            "do": "mark",
+            "name": "gameplay"
+          },
+          {
+            "do": "wait",
+            "ms": 2500
+          },
+          {
+            "do": "click",
+            "text": "START BATTLE",
+            "force": true,
+            "optional": true,
+            "timeout": 5000
+          },
+          {
+            "do": "wait",
+            "ms": 12000
+          }
+        ]
+      },
+      "segment": {
+        "from": "menu",
+        "durationSec": 12
+      },
+      "assets": {
+        "titleCard": {
+          "path": "EMOJI-ELEMENTS-TITLE-CARD.jpg",
+          "sha256": "aaf56612a48e75ce973a9885d846c0e7ff7a58a5d1ead2bb3ee949b944b91e96"
+        },
+        "music": {
+          "path": "Emoji Elements - Celestial Battle Theme.mp3",
+          "sha256": "fd91367d004e4f76a2181f90cad311c771116a44ffc60f8ed1b9e5505c16a20e",
+          "startSec": 0
+        }
+      }
+    }
+  ]
+}
