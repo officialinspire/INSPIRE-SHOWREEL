@@ -20,21 +20,24 @@ else
   if [ "$(uname)" = "Linux" ] && [ "$SYSTEM" = 1 ] && [ "$(id -u)" = 0 ]; then npx playwright install-deps chromium; fi
 fi
 
-say "3/3 FFmpeg and fonts"
-if command -v ffmpeg >/dev/null && command -v ffprobe >/dev/null; then
-  echo "ffmpeg present: $(ffmpeg -version | head -1)"
+say "3/3 FFmpeg, fonts and the capture environment (Xvfb, PulseAudio)"
+NEED=""
+for b in ffmpeg ffprobe Xvfb pulseaudio pactl; do command -v "$b" >/dev/null || NEED="$NEED $b"; done
+if [ -z "$NEED" ]; then
+  echo "present: $(ffmpeg -version | head -1); Xvfb; pulseaudio"
 elif [ "$SYSTEM" = 1 ]; then
   if command -v apt-get >/dev/null; then
     SUDO=""; [ "$(id -u)" = 0 ] || SUDO="sudo"
-    $SUDO apt-get update && $SUDO apt-get install -y ffmpeg fonts-dejavu-core
+    $SUDO apt-get update && $SUDO apt-get install -y ffmpeg fonts-dejavu-core xvfb pulseaudio pulseaudio-utils
   elif command -v brew >/dev/null; then
     brew install ffmpeg
     echo "macOS: set segments.lowerThird.fontFile in config/trailer.json to e.g. /System/Library/Fonts/Supplemental/Arial Bold.ttf"
+    echo "Capture needs Linux (Xvfb + PulseAudio + x11grab); run npm run capture:all on Linux or in a container."
   else
     echo "Install FFmpeg (with libx264, libfreetype) manually: https://ffmpeg.org/download.html" >&2; exit 1
   fi
 else
-  echo "ffmpeg missing and --no-system given; install it yourself." >&2
+  echo "missing:$NEED (and --no-system given); install them yourself." >&2
 fi
 
 say "Verifying"

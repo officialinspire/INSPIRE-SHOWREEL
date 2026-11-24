@@ -29,12 +29,8 @@ function validate(games, trailer) {
     ids.add(g.id);
     if (g.commit && !/^[0-9a-f]{40}$/.test(g.commit)) errors.push(`games.json: ${g.id}.commit must be a full 40-char SHA`);
     if (g.url && !/^https:\/\//.test(g.url)) errors.push(`games.json: ${g.id}.url must be https`);
-    if (!g.capture || !Array.isArray(g.capture.steps)) errors.push(`games.json: ${g.id}.capture.steps missing`);
-    const marks = new Set((g.capture?.steps || []).filter((s) => s.do === 'mark').map((s) => s.name));
-    if (g.segment && !marks.has(g.segment.from)) errors.push(`games.json: ${g.id}.segment.from "${g.segment.from}" has no matching mark step`);
-    for (const s of g.capture?.steps || []) {
-      if (!['wait', 'press', 'click', 'waitFor', 'mark', 'hover', 'mouse'].includes(s.do)) errors.push(`games.json: ${g.id} unknown step "${s.do}"`);
-    }
+    if (!g.segment || typeof g.segment.shot !== 'string' || !['landscape', 'portrait'].includes(g.segment.layout)) errors.push(`games.json: ${g.id}.segment needs shot and layout`);
+    if (g.segment && !(g.segment.durationSec > 0 && g.segment.fromSec >= 0)) errors.push(`games.json: ${g.id}.segment needs fromSec >= 0 and durationSec > 0`);
     for (const kind of ['titleCard', 'music']) {
       const a = g.assets?.[kind];
       if (!a?.path || !/^[0-9a-f]{64}$/.test(a?.sha256 || '')) errors.push(`games.json: ${g.id}.assets.${kind} needs path + sha256`);
@@ -42,6 +38,8 @@ function validate(games, trailer) {
   }
   for (const id of trailer.segments?.order || []) if (!ids.has(id)) errors.push(`trailer.json: segments.order references unknown game "${id}"`);
   for (const k of ['assets', 'vendor', 'capture', 'footage', 'renders']) if (!trailer.paths?.[k]) errors.push(`trailer.json: paths.${k} missing`);
+  for (const l of ['landscape', 'portrait']) if (!(trailer.capture?.layouts?.[l]?.width > 0)) errors.push(`trailer.json: capture.layouts.${l} missing`);
+  if (!['game', 'music', 'mix'].includes(trailer.segments?.audio)) errors.push('trailer.json: segments.audio must be "game", "music" or "mix"');
   if (!['fit', 'native'].includes(trailer.intro?.mode)) errors.push('trailer.json: intro.mode must be "fit" or "native"');
   return errors;
 }

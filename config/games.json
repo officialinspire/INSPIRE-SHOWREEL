@@ -86,52 +86,11 @@
       "stack": "Static HTML/JS, no build step",
       "startup": "Start screen (#touch-start-btn \"TOUCH TO START\") -> studio intro #intro-video (skip: #intro-skip-btn \"TAP TO SKIP\") -> main menu (#btn-new-game, #btn-continue-game, #btn-options).",
       "controls": "Point and click / tap. Inventory, Notebook and Pause buttons on the HUD.",
-      "capture": {
-        "steps": [
-          {
-            "do": "wait",
-            "ms": 2500
-          },
-          {
-            "do": "click",
-            "selector": "#touch-start-btn",
-            "force": true
-          },
-          {
-            "do": "waitFor",
-            "selector": "#btn-new-game",
-            "timeout": 20000
-          },
-          {
-            "do": "wait",
-            "ms": 800
-          },
-          {
-            "do": "mark",
-            "name": "menu"
-          },
-          {
-            "do": "wait",
-            "ms": 3500
-          },
-          {
-            "do": "click",
-            "selector": "#btn-new-game",
-            "force": true
-          },
-          {
-            "do": "mark",
-            "name": "gameplay"
-          },
-          {
-            "do": "wait",
-            "ms": 12000
-          }
-        ]
-      },
       "segment": {
-        "from": "menu",
-        "durationSec": 12
+        "shot": "opening-scene",
+        "layout": "landscape",
+        "fromSec": 8,
+        "durationSec": 14
       },
       "assets": {
         "titleCard": {
@@ -143,7 +102,8 @@
           "sha256": "c433dbff6d3252952e13cd434fad254ed943a521dc762028822ef39e86bd6945",
           "startSec": 0
         }
-      }
+      },
+      "adapter": "scripts/capture/adapters/hardigan-boys.js"
     },
     {
       "id": "sticks-and-bones",
@@ -157,61 +117,10 @@
       "stack": "Vite + TypeScript, deployed by .github/workflows/deploy-pages.yml",
       "startup": "Full-screen gate \"Tap, click or press Enter to start\" -> studio intro (hashed asset inspiresoftwareintro-*.mp4; Skip intro / Mute arm 400 ms after the start input is released) -> main menu (Story, Quick Play, Two Players, How to Play, Settings, Statistics, Achievements).",
       "controls": "Tap/click a domino, then an open end. Enter/any key starts. See repo README and in-game How to Play.",
-      "capture": {
-        "steps": [
-          {
-            "do": "wait",
-            "ms": 2500
-          },
-          {
-            "do": "press",
-            "key": "Enter"
-          },
-          {
-            "do": "waitFor",
-            "text": "Quick Play",
-            "timeout": 20000
-          },
-          {
-            "do": "wait",
-            "ms": 800
-          },
-          {
-            "do": "mark",
-            "name": "menu"
-          },
-          {
-            "do": "wait",
-            "ms": 3500
-          },
-          {
-            "do": "click",
-            "text": "Quick Play",
-            "force": true
-          },
-          {
-            "do": "mark",
-            "name": "gameplay"
-          },
-          {
-            "do": "wait",
-            "ms": 2500
-          },
-          {
-            "do": "click",
-            "text": "Deal the tiles",
-            "force": true,
-            "optional": true,
-            "timeout": 5000
-          },
-          {
-            "do": "wait",
-            "ms": 12000
-          }
-        ]
-      },
       "segment": {
-        "from": "menu",
+        "shot": "quick-play-hand",
+        "layout": "landscape",
+        "fromSec": 3,
         "durationSec": 12
       },
       "assets": {
@@ -224,7 +133,8 @@
           "sha256": "19ec7e80026246f8c1b88d5942a3e579a934a2ba01a40e18b174249f93ea4e6d",
           "startSec": 0
         }
-      }
+      },
+      "adapter": "scripts/capture/adapters/sticks-and-bones.js"
     },
     {
       "id": "card-parlor",
@@ -238,67 +148,10 @@
       "stack": "Vite + TypeScript, deployed by .github/workflows/deploy.yml",
       "startup": "Animated title (\"Skip intro\") -> \"TOUCH TO START / ENTER PARLOR\" -> studio intro video (\"Skip video\") -> hub (Story Mode, Quick Play Klondike, Card Games, Collection, Gameboards, Passport, Achievements).",
       "controls": "Tap/click cards; drag in solitaire. Any tap/Enter/Space/Escape skips the title animation.",
-      "capture": {
-        "steps": [
-          {
-            "do": "waitFor",
-            "text": "ENTER PARLOR",
-            "timeout": 20000
-          },
-          {
-            "do": "wait",
-            "ms": 800
-          },
-          {
-            "do": "click",
-            "text": "ENTER PARLOR",
-            "force": true
-          },
-          {
-            "do": "waitFor",
-            "text": "QUICK PLAY",
-            "timeout": 25000
-          },
-          {
-            "do": "wait",
-            "ms": 800
-          },
-          {
-            "do": "mark",
-            "name": "menu"
-          },
-          {
-            "do": "wait",
-            "ms": 3500
-          },
-          {
-            "do": "click",
-            "text": "QUICK PLAY",
-            "force": true
-          },
-          {
-            "do": "mark",
-            "name": "gameplay"
-          },
-          {
-            "do": "wait",
-            "ms": 2500
-          },
-          {
-            "do": "click",
-            "text": "Deal",
-            "force": true,
-            "optional": true,
-            "timeout": 5000
-          },
-          {
-            "do": "wait",
-            "ms": 12000
-          }
-        ]
-      },
       "segment": {
-        "from": "menu",
+        "shot": "klondike",
+        "layout": "landscape",
+        "fromSec": 4,
         "durationSec": 12
       },
       "assets": {
@@ -311,7 +164,8 @@
           "sha256": "8b4c6ec80c6bd626d26b760758ccb17dd0e5312c25e46560baf4a02351644571",
           "startSec": 0
         }
-      }
+      },
+      "adapter": "scripts/capture/adapters/card-parlor.js"
     },
     {
       "id": "shells-and-feathers",
@@ -325,72 +179,10 @@
       "stack": "Static HTML/CSS/ES modules, no build step",
       "startup": "Start screen #start-button \"Touch, click, or press any key to start\" (pulsing; Playwright needs force:true) -> studio intro #intro-video once per browser session (skip: #intro-skip, Escape/Enter/Space) -> Spirit of the Woods hub: Shells & Feathers (tic-tac-toe) and Acorns & Leaves (checkers). The Shells & Feathers Play link is a[href=\"#/shells-feathers\"].",
       "controls": "Tap a square / arrow keys + Enter or Space. Menu above the board; Escape steps back.",
-      "capture": {
-        "steps": [
-          {
-            "do": "wait",
-            "ms": 2500
-          },
-          {
-            "do": "click",
-            "selector": "#start-button",
-            "force": true
-          },
-          {
-            "do": "wait",
-            "ms": 1500
-          },
-          {
-            "do": "waitFor",
-            "selector": "#intro-video",
-            "state": "hidden",
-            "timeout": 20000
-          },
-          {
-            "do": "waitFor",
-            "selector": "a[href=\"#/shells-feathers\"]",
-            "timeout": 10000
-          },
-          {
-            "do": "wait",
-            "ms": 800
-          },
-          {
-            "do": "mark",
-            "name": "menu"
-          },
-          {
-            "do": "wait",
-            "ms": 3500
-          },
-          {
-            "do": "click",
-            "selector": "a[href=\"#/shells-feathers\"]",
-            "force": true
-          },
-          {
-            "do": "mark",
-            "name": "gameplay"
-          },
-          {
-            "do": "wait",
-            "ms": 2500
-          },
-          {
-            "do": "click",
-            "text": "Play the Spirit",
-            "force": true,
-            "optional": true,
-            "timeout": 5000
-          },
-          {
-            "do": "wait",
-            "ms": 12000
-          }
-        ]
-      },
       "segment": {
-        "from": "menu",
+        "shot": "hub-and-tic-tac-toe",
+        "layout": "landscape",
+        "fromSec": 5,
         "durationSec": 12
       },
       "assets": {
@@ -403,7 +195,8 @@
           "sha256": "a51c10cfe783d063741fb8c702ed893c95e2047e9ddd09d3912d30f657e8b8a2",
           "startSec": 0
         }
-      }
+      },
+      "adapter": "scripts/capture/adapters/shells-and-feathers.js"
     },
     {
       "id": "gridlock",
@@ -417,65 +210,10 @@
       "stack": "Static HTML/CSS/ES modules, no build step",
       "startup": "Title #start-button \"Click or press Enter to start\" -> studio intro #intro-video (skip: #intro-skip) -> title menu (Play Solo, Local Multiplayer, Custom / Mixed Game, How To Play, Statistics, Settings).",
       "controls": "Click the gap between intersections to pave; click a block to build. Tab/arrows/Enter on keyboard. Pause button top-left.",
-      "capture": {
-        "steps": [
-          {
-            "do": "wait",
-            "ms": 2500
-          },
-          {
-            "do": "click",
-            "selector": "#start-button",
-            "force": true
-          },
-          {
-            "do": "waitFor",
-            "text": "Play Solo",
-            "timeout": 20000
-          },
-          {
-            "do": "wait",
-            "ms": 800
-          },
-          {
-            "do": "mark",
-            "name": "menu"
-          },
-          {
-            "do": "wait",
-            "ms": 3500
-          },
-          {
-            "do": "click",
-            "text": "Play Solo",
-            "force": true
-          },
-          {
-            "do": "click",
-            "selector": "#setup-start",
-            "force": true,
-            "optional": true,
-            "timeout": 5000
-          },
-          {
-            "do": "click",
-            "selector": "#city-intro-go",
-            "force": true,
-            "optional": true,
-            "timeout": 5000
-          },
-          {
-            "do": "mark",
-            "name": "gameplay"
-          },
-          {
-            "do": "wait",
-            "ms": 12000
-          }
-        ]
-      },
       "segment": {
-        "from": "menu",
+        "shot": "capture-and-build",
+        "layout": "landscape",
+        "fromSec": 0,
         "durationSec": 12
       },
       "assets": {
@@ -488,7 +226,8 @@
           "sha256": "9441456e2f930cedaae8a3b85db14f8713efd367e216d202325a2b5a95b8a9f7",
           "startSec": 0
         }
-      }
+      },
+      "adapter": "scripts/capture/adapters/gridlock.js"
     },
     {
       "id": "emoji-elements",
@@ -502,62 +241,10 @@
       "stack": "Static HTML/JS PWA (service worker)",
       "startup": "Click-to-start overlay #clickToStart -> studio intro #introVideo inside #introContainer -> main menu (NEW GAME, DECK BUILDER, COLLECTION, PACK SHOP, HOW TO PLAY, STATS, ACHIEVEMENTS).",
       "controls": "Tap/click a card to play it; long-press/right-click for details. Keyboard: Space/E end turn, A attack, M mulligan, H history, Esc pause.",
-      "capture": {
-        "steps": [
-          {
-            "do": "wait",
-            "ms": 2500
-          },
-          {
-            "do": "click",
-            "selector": "#clickToStart",
-            "force": true
-          },
-          {
-            "do": "waitFor",
-            "text": "NEW GAME",
-            "timeout": 20000
-          },
-          {
-            "do": "wait",
-            "ms": 800
-          },
-          {
-            "do": "mark",
-            "name": "menu"
-          },
-          {
-            "do": "wait",
-            "ms": 3500
-          },
-          {
-            "do": "click",
-            "text": "NEW GAME",
-            "force": true
-          },
-          {
-            "do": "mark",
-            "name": "gameplay"
-          },
-          {
-            "do": "wait",
-            "ms": 2500
-          },
-          {
-            "do": "click",
-            "text": "START BATTLE",
-            "force": true,
-            "optional": true,
-            "timeout": 5000
-          },
-          {
-            "do": "wait",
-            "ms": 12000
-          }
-        ]
-      },
       "segment": {
-        "from": "menu",
+        "shot": "battle-combat",
+        "layout": "landscape",
+        "fromSec": 0,
         "durationSec": 12
       },
       "assets": {
@@ -570,7 +257,8 @@
           "sha256": "fd91367d004e4f76a2181f90cad311c771116a44ffc60f8ed1b9e5505c16a20e",
           "startSec": 0
         }
-      }
+      },
+      "adapter": "scripts/capture/adapters/emoji-elements.js"
     }
   ]
 }

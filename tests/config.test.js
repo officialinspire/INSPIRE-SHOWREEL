@@ -23,12 +23,12 @@ test('validation catches broken config', () => {
   const cfg = config.load();
   const games = structuredClone(cfg.games);
   games.games[0].commit = 'main';
-  games.games[1].segment.from = 'nope';
+  games.games[1].segment.layout = 'sideways';
   const trailer = structuredClone(cfg.trailer);
   trailer.segments.order.push('ghost');
   const errs = config.validate(games, trailer);
   assert.ok(errs.some((e) => e.includes('40-char SHA')));
-  assert.ok(errs.some((e) => e.includes('no matching mark')));
+  assert.ok(errs.some((e) => e.includes('segment needs shot and layout')));
   assert.ok(errs.some((e) => e.includes('"ghost"')));
 });
 

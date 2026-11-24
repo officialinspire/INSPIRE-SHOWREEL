@@ -29,6 +29,16 @@ main(async () => {
     for (const f of ['drawtext', 'overlay', 'loudnorm', 'scale', 'pad', 'afade']) need(new RegExp(`\\b${f}\\b`).test(filt), `ffmpeg filter ${f}`, f === 'drawtext' ? 'needs ffmpeg built with libfreetype' : '');
   }
 
+  log.step('Capture environment (Xvfb + PulseAudio + FFmpeg devices)');
+  for (const [bin, fix] of [['Xvfb', 'apt-get install xvfb'], ['pulseaudio', 'apt-get install pulseaudio'], ['pactl', 'apt-get install pulseaudio-utils']]) {
+    need(!!which(bin), `${bin} on PATH`, fix);
+  }
+  if (which('ffmpeg')) {
+    const { out: dev } = await run('ffmpeg', ['-hide_banner', '-devices']);
+    need(/\bx11grab\b/.test(dev), 'ffmpeg input device x11grab', 'needs ffmpeg built with libxcb');
+    need(/\bpulse\b/.test(dev), 'ffmpeg input device pulse', 'needs ffmpeg built with libpulse');
+  }
+
   log.step('Playwright / Chromium');
   let playwright;
   try {

@@ -12,7 +12,7 @@
   "video": {
     "width": 1920,
     "height": 1080,
-    "fps": 30,
+    "fps": 60,
     "codec": "libx264",
     "preset": "slow",
     "crf": 16,
@@ -28,12 +28,18 @@
     "loudnorm": { "enabled": true, "I": -14, "TP": -1.5, "LRA": 11 }
   },
   "capture": {
-    "viewport": { "width": 1920, "height": 1080 },
-    "deviceScaleFactor": 1,
-    "headless": true,
-    "chromiumArgs": ["--autoplay-policy=no-user-gesture-required"],
+    "comment": "Xvfb + headed Chromium (CDP fullscreen) + FFmpeg x11grab + PulseAudio null-sink monitor. Raw files are Matroska: x264 ultrafast CRF 'crf' + PCM 48 kHz.",
+    "layouts": {
+      "landscape": { "width": 1920, "height": 1080 },
+      "portrait": { "width": 1080, "height": 1920 }
+    },
+    "fps": 60,
+    "crf": 8,
+    "retries": 2,
+    "shotTimeoutSec": 90,
     "navigationTimeoutMs": 45000,
-    "stepScreenshots": true
+    "targetSecPerGame": { "min": 30, "max": 60 },
+    "chromiumArgs": []
   },
   "intro": {
     "comment": "The studio intro is never altered on disk. 'fit' scales 1080x720 to 1620x1080 (lanczos) and pillarboxes; 'native' centres it pixel-for-pixel. Its own soundtrack is kept and only resampled to the master rate.",
@@ -45,6 +51,9 @@
   "segments": {
     "order": ["hardigan-boys", "sticks-and-bones", "card-parlor", "shells-and-feathers", "gridlock", "emoji-elements"],
     "fadeSec": 0.5,
+    "audio": "game",
+    "audioComment": "game = the game's own sound recorded with the footage; music = the game's original music file; mix = game sound over the music at musicUnderGame",
+    "musicUnderGame": 0.35,
     "lowerThird": {
       "enabled": true,
       "fontFile": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",

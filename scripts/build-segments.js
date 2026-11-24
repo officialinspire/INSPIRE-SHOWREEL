@@ -26,20 +26,21 @@ async function buildIntro(cfg, out) {
 async function buildGame(cfg, game, out, workDir) {
   const t = cfg.trailer;
   const { width: W, height: H, fps } = t.video;
-  const capDir = path.join(cfg.paths.capture, game.id);
-  const marksFile = path.join(capDir, 'marks.json');
-  if (!fs.existsSync(marksFile)) throw new Error(`no capture for ${game.id} — run npm run capture -- --only=${game.id}`);
-  const marks = JSON.parse(fs.readFileSync(marksFile, 'utf8'));
-  if (!marks.ok) throw new Error(`capture for ${game.id} failed: ${marks.error}`);
-  const webm = path.join(cfg.paths.root, marks.video);
-  const start = marks.marks[game.segment.from];
-  const capLen = (await probe(webm)).duration || marks.durationSec;
-  let dur = game.segment.durationSec;
+  const seg = game.segment;
+  const manifestFile = path.join(cfg.paths.capture, game.id, 'manifest.json');
+  if (!fs.existsSync(manifestFile)) throw new Error(`no capture for ${game.id} — run npm run capture:${game.id}`);
+  const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
+  const shot = manifest.shots.find((s) => s.id === seg.shot && s.layout === seg.layout);
+  if (!shot || shot.status === 'fail' || !shot.file) throw new Error(`${game.id}: shot ${seg.layout}/${seg.shot} has no usable recording (status ${shot?.status ?? 'missing'})`);
+  const raw = path.join(cfg.paths.root, shot.file);
+  const start = seg.fromSec;
+  const capLen = (await probe(raw)).duration;
+  let dur = seg.durationSec;
   if (start + dur > capLen - 0.2) {
     dur = +(capLen - 0.2 - start).toFixed(2);
-    log.warn(`${game.id}: capture too short, segment trimmed to ${dur}s`);
+    log.warn(`${game.id}: shot shorter than requested, segment trimmed to ${dur}s`);
   }
-  if (dur < 3) throw new Error(`${game.id}: usable footage after mark "${game.segment.from}" is only ${dur}s`);
+  if (dur < 3) throw new Error(`${game.id}: only ${dur}s usable after ${start}s in ${seg.shot}`);
 
   const fade = t.segments.fadeSec;
   const lt = t.segments.lowerThird;
@@ -72,12 +73,15 @@ async function buildGame(cfg, game, out, workDir) {
   }
   graph += `;${vOut}format=yuv420p[v]`;
   const au = t.audio;
-  const af = [`aformat=sample_rates=${au.sampleRate}:channel_layouts=stereo`, `volume=${au.musicVolume}`];
+  const af = [`aformat=sample_rates=${au.sampleRate}:channel_layouts=stereo`, `volume=${t.segments.audio === 'music' ? au.musicVolume : 1}`];
   if (au.loudnorm.enabled) af.push(`loudnorm=I=${au.loudnorm.I}:TP=${au.loudnorm.TP}:LRA=${au.loudnorm.LRA}`, `aresample=${au.sampleRate}`);
   af.push(`afade=t=in:st=0:d=${fade}`, `afade=t=out:st=${(dur - fade * 2).toFixed(3)}:d=${fade * 2}`);
-  graph += `;[1:a]${af.join(',')}[a]`;
+  const mode = t.segments.audio;
+  const src = mode === 'music' ? '[1:a]' : '[0:a]';
+  if (mode === 'mix') graph += `;[1:a]volume=${t.segments.musicUnderGame}[bed];[0:a][bed]amix=inputs=2:duration=first:normalize=0[pre];[pre]${af.join(',')}[a]`;
+  else graph += `;${src}${af.join(',')}[a]`;
 
-  const inputs = ['-ss', String(start), '-t', String(dur), '-i', webm, '-ss', String(game.assets.music.startSec || 0), '-t', String(dur), '-i', music];
+  const inputs = ['-ss', String(start), '-t', String(dur), '-i', raw, '-ss', String(game.assets.music.startSec || 0), '-t', String(dur), '-i', music];
   if (wm.enabled) inputs.push('-i', cfg.paths.logo);
   await run('ffmpeg', ['-y', '-hide_banner', ...inputs, '-filter_complex', graph, '-map', '[v]', '-map', '[a]', '-t', String(dur), ...encodeArgs(t), out]);
 }
