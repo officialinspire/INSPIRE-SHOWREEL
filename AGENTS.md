@@ -41,6 +41,7 @@ scripts/github-release.js, verify-release.js   GitHub release create/update (RES
 scripts/*.js             other stages (check-deps, verify-urls, fetch-assets, validate-assets,
                          build-segments, render, clean); install.sh
 assets/branding/         committed studio originals (intro MP4, logo)
+assets/music/            studio theme song used as the showreel bed (SHA-256 in the trailer EDL)
 docs/PRODUCTION_STATUS.md  verification record, per-game capture results, QA, blockers
 docs/REGENERATING.md     exact regeneration commands;  docs/ADDING_A_GAME.md  adding a game
 docs/marketing/SOCIAL_COPY.md  draft captions/promo copy (never auto-posted)
@@ -60,7 +61,7 @@ Selectors come from the game's own code and tests. Each adapter's header comment
 
 ## Editing rules
 
-- Trailers and highlights use **only genuine captures and the studio's own media**: the original intro, the INSPIRE logo, and the games' own soundtracks fetched at pinned commits. Never add stock footage, generated imagery or unlicensed music. The OFFICIAL INSPIRE soundtracks carry no licence file in their repos, so record music approval in `docs/PRODUCTION_STATUS.md`.
+- Trailers and highlights use **only genuine captures and the studio's own media**: the original intro, the INSPIRE logo, the studio theme song (`assets/music/`, hash in the EDL), and the games' own soundtracks fetched at pinned commits. Never add stock footage, generated imagery or unlicensed music. The OFFICIAL INSPIRE soundtracks carry no licence file in their repos, so record music approval in `docs/PRODUCTION_STATUS.md`.
 - Trailer clips come from **SFX-only takes** (`npm run capture:sfx`) so that the music bed never clashes with in-game music. Highlights use the full-audio takes.
 - Clips reference **manifest events** (`anchor`, `occurrence`, `offset`), never raw seconds. After a re-capture, run `npm test`: it resolves every anchor.
 - **Never blind-crop.** A `crop` framing needs a `verified` note describing what the rectangle keeps, checked against real frames. Otherwise use `fit`, or the game's own portrait capture.

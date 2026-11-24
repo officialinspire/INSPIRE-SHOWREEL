@@ -26,7 +26,7 @@ on:
       release_tag:
         description: "Release tag"
         type: string
-        default: showreel-2026-v1.0.0
+        default: showreel-2026-v1.1.0
       upload_raw_captures:
         description: "Also upload raw captures (~3.4 GB) as an artifact"
         type: boolean

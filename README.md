@@ -1,6 +1,6 @@
 # INSPIRE Showreel
 
-Production pipeline for **ENTER THE INSPIREVERSE — Official Gameplay Showcase 2026**. It plays the six live INSPIRE browser games with Playwright in real Chromium, records 1080p60 gameplay with sound, cuts trailers to the beat with FFmpeg, validates every file and publishes the results as a GitHub release. Everything in the trailers is genuine captured gameplay or the studio's own media: the original `inspiresoftwareintro.mp4`, the INSPIRE logo and the games' own soundtracks.
+Production pipeline for **ENTER THE INSPIREVERSE — Official Gameplay Showcase 2026**. It plays the six live INSPIRE browser games with Playwright in real Chromium, records 1080p60 gameplay with sound, cuts trailers to the beat with FFmpeg, validates every file and publishes the results as a GitHub release. Everything in the trailers is genuine captured gameplay or the studio's own media: the original `inspiresoftwareintro.mp4`, the INSPIRE logo, the studio theme song and the games' own soundtracks.
 
 | # | Game | Live build | Source (read-only) |
 |---|------|-----------|--------------------|
@@ -17,9 +17,9 @@ These are published on the [Releases page](https://github.com/officialinspire/IN
 
 | File | Format |
 |------|--------|
-| `INSPIRE_SHOWREEL_2026_LANDSCAPE.mp4` | 1920×1080, 57 s |
-| `INSPIRE_SHOWREEL_2026_VERTICAL.mp4` | 1080×1920, 57 s (its own composition, not a crop) |
-| `INSPIRE_SHOWREEL_2026_SQUARE.mp4` | 1080×1080, 57 s |
+| `INSPIRE_SHOWREEL_2026_LANDSCAPE.mp4` | 1920×1080, 58.45 s |
+| `INSPIRE_SHOWREEL_2026_VERTICAL.mp4` | 1080×1920, 58.45 s (its own composition, not a crop) |
+| `INSPIRE_SHOWREEL_2026_SQUARE.mp4` | 1080×1080, 58.45 s |
 | `INSPIRE_SHOWREEL_2026_<GAME>_15S_{LANDSCAPE,VERTICAL}.mp4` | 15 s trailer per game, with the game's own sound |
 | `INSPIRE_SHOWREEL_2026_THUMB_{LANDSCAPE,PORTRAIT}.jpg` and `…_<GAME>_THUMB_*.jpg` | thumbnails built from real gameplay frames |
 | `SOCIAL_COPY.md` | draft captions and promotional copy ([source](docs/marketing/SOCIAL_COPY.md)); nothing is posted automatically |
@@ -110,7 +110,10 @@ Playwright's built-in recorder gives about 0.8 Mb/s VP8 with no sound, so the en
 ### Edit (`scripts/edit/`, `config/trailers/inspireverse.json`)
 
 - **Clips are anchored to capture events, not timestamps.** An anchor is an event such as `"scene: The Raid"` or `"place tile"`, so re-captures keep the edit valid, and `npm test` resolves every anchor in every format.
-- **Cuts are locked to the music.** The bed is the OFFICIAL INSPIRE *Emoji Elements — Celestial Battle Theme* at 136 BPM. Bar boundaries are computed frame-accurately, so there is no drift. The montage hits on the track's drop.
+- **Cuts are locked to the music.** The bed is the studio theme song *Inspire Showcase (Pure Cyber Beat)* (`assets/music/`, 146.05 BPM). Bar boundaries are computed frame-accurately, so there is no drift.
+  - Each game section is one 4-bar phrase of the song's build, and Shells & Feathers ends on its riser.
+  - The GRIDLOCK + Emoji Elements montage hits the drop with 1- and ½-bar cuts.
+  - Transitions are white flashes on the phrase accents and the drop, plus a zoom pulse on every montage beat.
 - **Each aspect ratio is its own composition.** Each format sets per-game framing:
   - `full`: the capture matches the canvas.
   - `fit`: the whole capture over a blurred fill, so nothing is cut.

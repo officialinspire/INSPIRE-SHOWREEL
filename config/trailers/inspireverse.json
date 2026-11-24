@@ -69,21 +69,31 @@
   },
   "look": {
     "vignette": 0.3,
-    "pushIn": 0.035,
-    "sectionDip": 0.16
+    "pushIn": 0.03,
+    "sectionTransition": "flash",
+    "flashSec": 0.1,
+    "dropFlashSec": 0.18,
+    "pulse": {
+      "montage": 0.022,
+      "decaySec": 0.09,
+      "comment": "beat-synced zoom pulse: scale += amount * exp(-(t mod beat)/decay)"
+    }
   },
   "music": {
-    "comment": "Emoji Elements - Celestial Battle Theme (OFFICIAL INSPIRE soundtrack, fetched at the pinned commit). Beat grid measured: 136.00 BPM, downbeat 1.334 s, bar 1.7647 s. Starting at bar 8 puts the track's break (bar 26) on the last Shells & Feathers bar and its drop (bar 27) on the montage.",
-    "game": "emoji-elements",
-    "bpm": 136,
-    "firstDownbeatSec": 1.334,
-    "startBar": 8,
-    "gain": 0.9,
-    "fadeInSec": 0.35,
-    "fadeOutSec": 3.2
+    "comment": "Theme song: 'Inspire Showcase (Pure Cyber Beat)' by officialinspire (studio original, supplied 2026-11-24). Grid measured: 146.05 BPM, downbeat 0.036 s, bar 1.6433 s; drift <= +/-6 ms over the whole song. Structure: build bars 0-15 with accents every 4 bars (0,4,8,12) and a riser gap on bar 15; drop on bar 16. Each story section is one 4-bar phrase, Shells & Feathers ends on the riser, the montage hits the drop.",
+    "file": "assets/music/inspire-showcase-pure-cyber-beat.mp3",
+    "sha256": "87a08894b82beba51797ada771b693a24affd59ddfc38d8c5bb7053cab440b87",
+    "title": "Inspire Showcase (Pure Cyber Beat)",
+    "artist": "officialinspire",
+    "bpm": 146.05,
+    "firstDownbeatSec": 0.036,
+    "startBar": 0,
+    "gain": 0.95,
+    "fadeInSec": 0.03,
+    "fadeOutSec": 2.8
   },
   "audio": {
-    "sfxGain": 0.85,
+    "sfxGain": 0.75,
     "edgeFadeSec": 0.03,
     "duck": {
       "threshold": 0.025,
@@ -132,7 +142,7 @@
           "shot": "the-raid",
           "anchor": "scene: The Raid",
           "offset": 1.0,
-          "bars": 2
+          "bars": 1
         }
       ]
     },
@@ -160,8 +170,8 @@
           "shot": "quick-play-hand",
           "anchor": "select tile",
           "occurrence": 2,
-          "offset": -0.5,
-          "bars": 2
+          "offset": -0.3,
+          "bars": 1
         }
       ]
     },
@@ -175,21 +185,21 @@
         {
           "shot": "parlor-hub",
           "anchor": "night",
-          "offset": 0.4,
-          "bars": 1,
+          "offset": 0.2,
+          "bars": 2,
           "title": true
         },
         {
           "shot": "story-chapter-one",
           "anchor": "challenge scene",
-          "offset": 0.5,
-          "bars": 2
+          "offset": 0.6,
+          "bars": 1
         },
         {
           "shot": "klondike",
           "anchor": "pick tableau",
-          "offset": -0.4,
-          "bars": 2
+          "offset": -0.3,
+          "bars": 1
         }
       ]
     },
@@ -203,22 +213,23 @@
         {
           "shot": "hub-and-tic-tac-toe",
           "anchor": "hub",
-          "offset": 0.4,
-          "bars": 1,
+          "offset": 0.3,
+          "bars": 2,
           "title": true
         },
         {
           "shot": "hub-and-tic-tac-toe",
           "anchor": "match",
           "offset": 0.2,
-          "bars": 2
+          "bars": 1
         },
         {
           "shot": "acorns-and-leaves",
           "anchor": "pick",
           "occurrence": 3,
           "offset": -0.3,
-          "bars": 1
+          "bars": 1,
+          "note": "riser gap (bar 15)"
         }
       ]
     },
@@ -228,61 +239,140 @@
       "clips": [
         {
           "game": "gridlock",
-          "shot": "capture-and-build",
-          "anchor": "road",
-          "offset": -0.2,
-          "bars": 1,
           "label": "GRIDLOCK",
           "accent": "0xE2553A",
-          "occurrence": 1
+          "shot": "capture-and-build",
+          "anchor": "road",
+          "occurrence": 1,
+          "offset": -0.1,
+          "bars": 1
         },
         {
           "game": "emoji-elements",
+          "label": "EMOJI ELEMENTS",
+          "accent": "0xB98CFF",
           "shot": "battle-combat",
           "anchor": "CONFIRM attack",
+          "occurrence": 1,
           "offset": -0.3,
-          "bars": 1,
-          "label": "EMOJI ELEMENTS",
-          "accent": "0xB98CFF"
+          "bars": 1
         },
         {
           "game": "gridlock",
+          "label": "GRIDLOCK",
+          "accent": "0xE2553A",
           "shot": "opening-moves",
           "anchor": "road",
           "occurrence": 2,
-          "offset": -0.6,
-          "bars": 1,
-          "label": "GRIDLOCK",
-          "accent": "0xE2553A"
+          "offset": -0.4,
+          "bars": 0.5
         },
         {
           "game": "emoji-elements",
+          "label": "EMOJI ELEMENTS",
+          "accent": "0xB98CFF",
           "shot": "pack-opening",
           "anchor": "OPEN PACK",
           "offset": 0.2,
-          "bars": 1,
-          "label": "EMOJI ELEMENTS",
-          "accent": "0xB98CFF"
+          "bars": 0.5
         },
         {
           "game": "gridlock",
+          "label": "GRIDLOCK",
+          "accent": "0xE2553A",
           "shot": "capture-and-build",
           "anchor": "build",
           "occurrence": 2,
           "offset": 0.1,
-          "bars": 1,
-          "label": "GRIDLOCK",
-          "accent": "0xE2553A"
+          "bars": 1
         },
         {
           "game": "emoji-elements",
-          "shot": "battle-combat",
-          "anchor": "CONFIRM attack",
-          "occurrence": 2,
-          "offset": 0.4,
-          "bars": 1,
           "label": "EMOJI ELEMENTS",
-          "accent": "0xB98CFF"
+          "accent": "0xB98CFF",
+          "shot": "battle-combat",
+          "anchor": "ATTACK",
+          "occurrence": 2,
+          "offset": -0.2,
+          "bars": 1
+        },
+        {
+          "game": "gridlock",
+          "label": "GRIDLOCK",
+          "accent": "0xE2553A",
+          "shot": "opening-moves",
+          "anchor": "board",
+          "offset": 1.0,
+          "bars": 1
+        },
+        {
+          "game": "emoji-elements",
+          "label": "EMOJI ELEMENTS",
+          "accent": "0xB98CFF",
+          "shot": "pack-opening",
+          "anchor": "next card",
+          "occurrence": 2,
+          "offset": 0.1,
+          "bars": 1
+        },
+        {
+          "game": "gridlock",
+          "label": "GRIDLOCK",
+          "accent": "0xE2553A",
+          "shot": "capture-and-build",
+          "anchor": "develop captured block",
+          "occurrence": 3,
+          "offset": -1.2,
+          "bars": 0.5
+        },
+        {
+          "game": "emoji-elements",
+          "label": "EMOJI ELEMENTS",
+          "accent": "0xB98CFF",
+          "shot": "pack-opening",
+          "anchor": "all 5 cards",
+          "offset": 0.2,
+          "bars": 0.5
+        },
+        {
+          "game": "gridlock",
+          "label": "GRIDLOCK",
+          "accent": "0xE2553A",
+          "shot": "capture-and-build",
+          "anchor": "build",
+          "occurrence": 4,
+          "offset": 0.1,
+          "bars": 1
+        },
+        {
+          "game": "emoji-elements",
+          "label": "EMOJI ELEMENTS",
+          "accent": "0xB98CFF",
+          "shot": "battle-combat",
+          "anchor": "cast card",
+          "occurrence": 1,
+          "offset": -0.3,
+          "bars": 1
+        },
+        {
+          "game": "emoji-elements",
+          "label": "EMOJI ELEMENTS",
+          "accent": "0xB98CFF",
+          "shot": "battle-combat",
+          "anchor": "END TURN",
+          "occurrence": 1,
+          "offset": 1.5,
+          "bars": 1
+        },
+        {
+          "game": "gridlock",
+          "label": "GRIDLOCK",
+          "accent": "0xE2553A",
+          "shot": "opening-moves",
+          "anchor": "road",
+          "occurrence": 4,
+          "offset": -0.4,
+          "bars": 1
         }
       ]
     }

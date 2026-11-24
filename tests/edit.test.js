@@ -39,3 +39,14 @@ test('every clip anchor resolves against the capture manifests (full and SFX tak
     assert.strictEqual(frames, Math.round(tl.totalBars * bar * edl.fps), `${format}/${variant}: frame total must match the bar grid (no drift)`);
   }
 });
+
+test('theme song is the committed studio original with its recorded hash and beat grid', () => {
+  const { sha256File } = require('../scripts/lib/util');
+  const f = path.join(config.ROOT, edl.music.file);
+  assert.ok(fs.existsSync(f), edl.music.file);
+  assert.strictEqual(sha256File(f), edl.music.sha256);
+  assert.ok(edl.music.bpm > 60 && edl.music.bpm < 200);
+  // Story sections each take one 4-bar phrase; the montage starts on bar 16 (the drop).
+  const story = edl.sections.filter((s) => !s.montage);
+  for (const s of story) assert.strictEqual(s.clips.reduce((t, c) => t + c.bars, 0), 4, s.id);
+});
